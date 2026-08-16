@@ -583,8 +583,6 @@ flowchart LR
 
 ## Visual: Repartition vs Coalesce
 
-## Visual: Repartition vs Coalesce
-
 ```mermaid
 flowchart TB
     A["Current partitions"]
