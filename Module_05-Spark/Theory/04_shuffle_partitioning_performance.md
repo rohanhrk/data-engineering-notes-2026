@@ -583,15 +583,17 @@ flowchart LR
 
 ## Visual: Repartition vs Coalesce
 
+## Visual: Repartition vs Coalesce
+
 ```mermaid
 flowchart TB
-    A[Current partitions]
+    A["Current partitions"]
 
-    A --> B[repartition(n)]
-    B --> C[Full shuffle]
-    C --> D[More or fewer balanced partitions]
+    A --> B["repartition(n)"]
+    B --> C["Full shuffle"]
+    C --> D["More or fewer balanced partitions"]
 
-    A --> E[coalesce(n)]
-    E --> F[Primarily combines existing partitions]
-    F --> G[Fewer partitions, usually less shuffle]
+    A --> E["coalesce(n)"]
+    E --> F["Primarily combines existing partitions"]
+    F --> G["Fewer partitions, usually less shuffle"]
 ```
