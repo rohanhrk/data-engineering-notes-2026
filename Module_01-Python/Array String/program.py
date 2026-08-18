@@ -381,3 +381,113 @@ def numSubarrayBoundedMax(self, nums: List[int], left: int, right: int) -> int:
 
     return ans
 
+# ============================================================================
+# program 13 : 238. Product of Array Except Self
+# url : https://leetcode.com/problems/product-of-array-except-self/
+# ============================================================================
+def productExceptSelf(self, nums: List[int]) -> List[int]:
+    left_prod = [1] * len(nums)
+    right_prod = [1] * len(nums)
+    ans = [0] * len(nums)
+
+    for i in range(1, len(nums)):
+        left_prod[i] = left_prod[i - 1] * nums[i - 1]
+
+    ans[len(nums) - 1] = left_prod[len(nums) - 1] * right_prod[len(nums) - 1]
+    
+    for i in range(len(nums) - 2, -1, -1):
+        right_prod[i] = right_prod[i + 1] * nums[i + 1]
+        ans[i] = left_prod[i] * right_prod[i]
+
+    return ans
+
+# ============================================================================
+# program 14 : 118. Pascal's Triangle
+# url : https://leetcode.com/problems/pascals-triangle/description/
+# ============================================================================
+def generate(self, numRows: int) -> List[List[int]]:
+    ans = []
+
+    for row in range(numRows):
+        smallAns = []
+        for col in range(row + 1):
+            if col == 0 or col == row:
+                smallAns.append(1)
+                continue
+            
+            smallAns.append(ans[row - 1][col - 1] + ans[row - 1][col])
+        
+        ans.append(smallAns)
+
+    return ans
+
+# ============================================================================
+# program 15 : 849. Maximize Distance to Closest Person
+# url : https://leetcode.com/problems/maximize-distance-to-closest-person/description/
+# ============================================================================
+def maxDistToClosest(self, seats: List[int]) -> int:
+    dist_idx = -int(1e9)
+    max_closest_dist = -int(1e9)
+
+    # solving distance between Alax and a person from left side to right
+    for i in range (len(seats)):
+        if seats[i] == 1:
+            # occupied -> mark as -1
+            seats[i] = -1
+            dist_idx = i
+            continue
+
+        seats[i] = abs(dist_idx - i)
+
+    # Now solving distance between Alax and a person from right side to left
+    # Additionally, we are solving cloest distance (min) and also maximize the distance 
+    # which will be our answer
+
+    dist_idx = int(1e9) # reset the value dist_idx
+    
+    for i in range (len(seats) - 1, -1, -1):
+        if seats[i] == -1:
+            # occupied
+            dist_idx = i
+            continue
+
+        seats[i] = min(seats[i], abs(dist_idx - i))
+        max_closest_dist = max(max_closest_dist, seats[i])
+
+    return max_closest_dist
+
+# ============================================================================
+# program 16 : 41. First Missing Positive
+# url : https://leetcode.com/problems/first-missing-positive/description/
+# ============================================================================
+def firstMissingPositive(self, nums: List[int]) -> int:
+    is_one_present_flag = False
+    unmarked_idx = len(nums) + 1 # assuming all element is present
+
+    # 1. Travel on list and replace out of ranged value as 1
+    # and also marked the flag value as True if found 1 in the list
+    for i in range(len(nums)):
+        if 0 >= nums[i] or nums[i] > len(nums):
+            nums[i] = 1
+        elif nums[i] == 1:
+            is_one_present_flag = True
+        else:
+            continue
+    
+    # 2. Return 1 if 1 is not found in the list
+    if not is_one_present_flag:
+        return 1
+
+    # 3. Travel on list and go to nums[elem], mark by negative sign
+    for idx, elem in enumerate(nums):
+        nums[abs(elem) - 1] = -abs(nums[abs(elem) - 1])
+
+    # 4. Iterate on the updated list and find unmarked index, unmarked_idx + 1 is result
+    # otherwise n + 1 is result
+
+    for idx in range(len(nums)):
+        if  nums[idx] > 0:
+            unmarked_idx = idx + 1
+            break
+        
+    return unmarked_idx
