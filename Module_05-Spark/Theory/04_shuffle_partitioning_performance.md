@@ -585,11 +585,13 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    A[Current partitions]
-    A --> B[repartition(n)]
-    B --> C[Full shuffle]
-    C --> D[More or fewer balanced partitions]
-    A --> E[coalesce(n)]
-    E --> F[Primarily combines existing partitions]
-    F --> G[Fewer partitions, usually less shuffle]
+    A["Current partitions"]
+
+    A --> B["repartition(n)"]
+    B --> C["Full shuffle"]
+    C --> D["More or fewer balanced partitions"]
+
+    A --> E["coalesce(n)"]
+    E --> F["Primarily combines existing partitions"]
+    F --> G["Fewer partitions, usually less shuffle"]
 ```
