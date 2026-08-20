@@ -1,2 +1,13 @@
-**/data/*.parquet
-**/data/*.csv
+# Data files
+*.parquet
+*.csv
+*.json
+
+# Spark
+spark-warehouse/
+checkpoint/
+output/
+
+# Python
+__pycache__/
+*.pyc
