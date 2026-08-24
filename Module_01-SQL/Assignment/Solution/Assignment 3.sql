@@ -334,4 +334,105 @@ SELECT
     ROUND(coalesce(d.amount, 0), 0) as amount
 FROM sale_rec s
 LEFT JOIN assignment_sql.daily_sales_gap d
-ON s.start_date = d.sale_date
+ON s.start_date = d.sale_date;
+
+-- ================================================================================
+-- QUESTION 7: Cohort Analysis - User Signup Cohorts
+-- ================================================================================
+
+-- Problem Statement:
+-- Analyze user activity by signup month cohort, showing the number of active 
+-- users in subsequent months.
+
+CREATE TABLE assignment_sql.users_cohort (
+    user_id INT PRIMARY KEY,
+    signup_date DATE
+);
+
+CREATE TABLE assignment_sql.user_activity (
+    activity_id INT PRIMARY KEY,
+    user_id INT,
+    activity_date DATE
+);
+
+INSERT INTO assignment_sql.users_cohort VALUES
+(1, '2024-01-15'),
+(2, '2024-01-20'),
+(3, '2024-02-10'),
+(4, '2024-02-25');
+
+INSERT INTO assignment_sql.user_activity VALUES
+(1, 1, '2024-01-20'),
+(2, 1, '2024-02-15'),
+(3, 1, '2024-03-10'),
+(4, 2, '2024-02-05'),
+(5, 3, '2024-02-20'),
+(6, 3, '2024-03-15'),
+(7, 4, '2024-03-01');
+
+SELECT * FROM assignment_sql.users_cohort;
+SELECT * FROM assignment_sql.user_activity;
+
+WITH activity_month_cte as (
+	SELECT
+		a.user_id,
+        c.signup_date,
+		a.activity_date,
+        (
+			month(a.activity_date) -
+			month(c.signup_date)
+		) as activity_month
+	FROM assignment_sql.user_activity a
+	INNER JOIN assignment_sql.users_cohort c
+	ON a.user_id = c.user_id
+)
+
+SELECT 
+	month(signup_date) as cohort_month,
+    SUM(CASE 
+		WHEN activity_month = 0 THEN 1 
+        ELSE 0
+    END) as month_0,
+    SUM(CASE 
+		WHEN activity_month = 1 THEN 1 
+        ELSE 0
+    END) as month_1,
+    SUM(CASE 
+		WHEN activity_month = 2 THEN 1 
+        ELSE 0
+    END) as month_2
+FROM activity_month_cte
+GROUP BY cohort_month;
+
+-- ================================================================================
+-- QUESTION 8: Detect Suspicious Transactions
+-- ================================================================================
+
+-- Problem Statement:
+-- Flag transactions that are more than 2 standard deviations from the customer's 
+-- average transaction amount.
+
+CREATE TABLE assignment_sql.transactions_susp (
+    txn_id INT PRIMARY KEY,
+    customer_id INT,
+    txn_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO assignment_sql.transactions_susp VALUES
+(1, 101, '2024-01-01', 100),
+(2, 101, '2024-01-05', 120),
+(3, 101, '2024-01-10', 90),
+(4, 101, '2024-01-15', 110),
+(5, 101, '2024-01-20', 500),
+(6, 102, '2024-01-02', 200),
+(7, 102, '2024-01-08', 180),
+(8, 102, '2024-01-12', 220),
+(9, 102, '2024-01-18', 190);
+
+SELECT * FROM assignment_sql.transactions_susp;
+
+100 + 120 + 90 + 110 + 500 = 920/5 = 184
+-84   -64  -94    -74  316 
+7056   4096 8836  5476 99856 = 
+
