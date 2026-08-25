@@ -149,3 +149,141 @@ def thirdLargest(self,arr):
             max3 = ele
     
     return max3
+
+# ----------------------------------------------------
+# Q7. Floor and Ceil in Unsorted
+# url: https://www.geeksforgeeks.org/problems/ceil-the-floor2802/1
+# ----------------------------------------------------
+def getFloorAndCeil(self, x: int, arr: list) -> list:
+    # code here
+    floor = float("-inf")
+    ceil = float("inf")
+    
+    result = []
+    
+    for ele in arr:
+        # Floor of x is the largest element which is smaller than or equal to x. 
+        #  Floor of x doesn’t exist if x is smaller than smallest element of arr[].
+        if ele <= x:
+            floor = max(floor, ele)
+        
+        # Ceil of x is the smallest element which is greater than or equal to x. 
+        # Ceil of x doesn’t exist if x is greater than greatest element of arr[].
+        if ele >= x:
+            ceil = min(ceil, ele);
+            
+    if floor == float("-inf"):
+        floor = -1
+    if ceil == float("inf"):
+        ceil = -1
+    
+    result.append(floor)
+    result.append(ceil)
+    
+    return result
+
+# ----------------------------------------------------
+# Q8. First and Second Smallests
+# url: https://www.geeksforgeeks.org/problems/find-the-smallest-and-second-smallest-element-in-an-array3226/1
+# ----------------------------------------------------
+def minAnd2ndMin(self, arr):
+    # code here
+    min1 = float("inf")
+    min2 = float("inf")
+    result = []
+    
+    for ele in arr:
+        if ele < min1:
+            min2 = min1
+            min1 = ele
+        elif ele != min1 and ele < min2:
+            min2 = ele
+    
+    if min1 == float("inf") or min2 == float("inf"):
+        result.append(-1)
+        return result
+        
+    result.append(min1)
+    result.append(min2)
+    
+    return result
+
+# ----------------------------------------------------
+# Q9. Longest Common Prefix of Strings
+# url: https://www.geeksforgeeks.org/problems/longest-common-prefix-in-an-array5129/1
+# ----------------------------------------------------
+def longestCommonPrefix(self, arr):
+    # code here
+    
+    ans = ""
+    flag = True
+    min_len = float("inf")
+    
+    for str in arr:
+        min_len = min(min_len, len(str))
+    
+    for i in range(min_len):
+        for str in arr:
+            if str[i] != arr[0][i]:
+                flag = False
+                break
+        
+        if not flag:
+            break
+    
+        ans += arr[0][i]
+    return ans
+
+# ----------------------------------------------------
+# Q10. String Rotated by 2 Places
+# url: https://www.geeksforgeeks.org/problems/check-if-string-is-rotated-by-two-places-1587115620/1
+# ----------------------------------------------------
+def isRotated(self,s1,s2):
+    #code here
+    s1_size = len(s1)
+    s2_size = len(s2)
+
+    # 1. Validate if both strings have valid size
+    if s1_size < 2 or s2_size < 2 or s1_size != s2_size:
+        return False
+    
+    if s1_size == 2:
+        if s1 in s2:
+            return True
+        else:
+            return False
+
+    # 2. return false if 2nd half strings not present in S2      
+    slice1 = s1[2:]
+    slice2 = s1[0:s1_size - 2]
+    
+    if slice1 not in s2 and slice2 not in s2:
+        return False
+        
+    flag1 = True
+    flag2 = True
+    
+    
+    # 3. Checking whether we can obtained S2 by rotating clockwise s1 by 2 places
+    s1_idx = 0
+    s2_idx = s2_size - 2
+    
+    while s1_idx < 2 and s2_idx < s2_size:
+        if s1[s1_idx] != s2[s2_idx]:
+            flag1 = False
+            break
+        s1_idx += 1
+        s2_idx += 1
+    
+    # 4. Checking whether we can obtained S2 by rotating anti-clockwise s1 by 2 places
+    s1_idx = s1_size - 2
+    s2_idx = 0
+    while s1_idx < s1_size and s2_idx < 2:
+        if s1[s1_idx] != s2[s2_idx]:
+            flag2 = False
+            break
+        s1_idx += 1
+        s2_idx += 1
+    
+    
+    return True if flag1 or flag2 else False
