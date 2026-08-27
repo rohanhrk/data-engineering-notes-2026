@@ -96,5 +96,26 @@ INNER JOIN downgrade_subscibers_cte d
 ON l.user_id = d.user_id
 ORDER BY days_as_subscriber DESC, user_id
 
- 
-
+-- -------------------------------------------------------------
+-- Q3. 3705. Find Golden Hour Customers
+-- url: https://leetcode.com/problems/find-golden-hour-customers/description/
+-- -------------------------------------------------------------
+WITH orders_rated_summary as (
+    SELECT
+        customer_id,
+        COUNT(*) as total_orders,
+        ROUND(SUM(order_rating) / COUNT(order_rating), 2) as average_rating ,
+        (COUNT(order_rating) / COUNT(*)) * 100 as pct_rated_orders 
+    FROM restaurant_orders
+    GROUP BY customer_id 
+    HAVING average_rating >= 4.0 AND pct_rated_orders >= 50 AND total_orders >= 3
+),
+peak_hour_orders as (
+    SELECT 
+        customer_id,
+        COUNT(*) as total_peak_hour_orders
+    FROM restaurant_orders
+    WHERE time(order_timestamp) BETWEEN '11:00:00' AND '14:00:00'
+        OR time(order_timestamp) BETWEEN '18:00:00' AND '21:00:00'
+    GROUP BY customer_id 
+)
