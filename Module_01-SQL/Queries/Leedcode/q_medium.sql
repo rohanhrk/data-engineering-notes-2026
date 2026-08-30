@@ -119,3 +119,179 @@ peak_hour_orders as (
         OR time(order_timestamp) BETWEEN '18:00:00' AND '21:00:00'
     GROUP BY customer_id 
 )
+
+-- -------------------------------------------------------------
+-- Q4. 3657. Find Loyal Customers
+-- url: https://leetcode.com/problems/find-loyal-customers/description/
+-- -------------------------------------------------------------
+WITH cust_trxn_summary_cte as (
+    SELECT 
+        customer_id,
+        min(transaction_date) as first_transaction_date,
+        max(transaction_date) as latest_transaction_date,
+        COUNT(*) as total_transaction
+    FROM customer_transactions
+    GROUP BY customer_id
+
+    /*
+        101     2024-01-05      2024-02-20      4
+        102     2024-01-10      2024-02-15      5
+        103     2024-01-01      2024-01-03      3
+        104     2024-01-01      2024-03-15      6
+    */
+
+), total_refund_count_cte as (
+    SELECT
+        customer_id,
+        COUNT(*) as total_refund
+    FROM customer_transactions
+    WHERE transaction_type = 'refund'
+    GROUP BY customer_id
+
+    /*
+        102     2
+        104     1
+    */
+
+)
+
+SELECT
+    c.customer_id
+FROM cust_trxn_summary_cte as c
+LEFT JOIN total_refund_count_cte as t
+ON c.customer_id = t.customer_id 
+WHERE (c.total_transaction - COALESCE(t.total_refund, 0)) >= 3
+    AND DATEDIFF(c.latest_transaction_date, c.first_transaction_date) >= 30
+    AND (COALESCE(t.total_refund, 0) / c.total_transaction)  < 0.2
+ORDER BY c.customer_id;
+
+
+/*
+    tbl1
+    101     2024-01-05      2024-02-20      4
+    102     2024-01-10      2024-02-15      5
+    103     2024-01-01      2024-01-03      3
+    104     2024-01-01      2024-03-15      6
+    =======
+    tb2
+    102     2
+    104     1
+
+    101     2024-01-05      2024-02-20      4   NULL    NULL
+    102     2024-01-10      2024-02-15      5   102     2
+    103     2024-01-01      2024-01-03      3   NULL    NULL
+    104     2024-01-01      2024-03-15      6   
+*/
+
+-- optimization 1
+-- We can minimize the 2nd cte query and write this into the first cte 
+
+WITH cust_trxn_summary_cte as (
+    SELECT 
+        customer_id,
+        min(transaction_date) as first_transaction_date,
+        max(transaction_date) as latest_transaction_date,
+        SUM(CASE WHEN transaction_type = 'purchase' THEN 1 ELSE 0 END) as total_purchase_txn,
+        SUM(CASE WHEN transaction_type = 'refund' THEN 1 ELSE 0 END) as total_refund_txn
+    FROM customer_transactions
+    GROUP BY customer_id
+
+    /*
+        101     2024-01-05      2024-02-20      4       0
+        102     2024-01-10      2024-02-15      3       2
+        103     2024-01-01      2024-01-03      3       0
+        104     2024-01-01      2024-03-15      5       1
+    */
+
+)
+SELECT
+    customer_id
+FROM cust_trxn_summary_cte
+WHERE total_purchase_txn >= 3
+    AND DATEDIFF(latest_transaction_date, first_transaction_date) >= 30
+    AND (total_refund_txn / (total_purchase_txn + total_refund_txn))  < 0.2
+ORDER BY customer_id;
+
+-- optimization 2
+SELECT 
+    customer_id
+FROM customer_transactions
+GROUP BY customer_id
+HAVING 
+    SUM(CASE WHEN transaction_type = 'purchase' THEN 1 ELSE 0 END) >= 3
+    AND DATEDIFF(max(transaction_date) , min(transaction_date) ) >= 30
+    AND (
+            SUM(CASE WHEN transaction_type = 'refund' THEN 1 ELSE 0 END) / 
+            (
+                SUM(CASE WHEN transaction_type = 'purchase' THEN 1 ELSE 0 END) + 
+                SUM(CASE WHEN transaction_type = 'refund' THEN 1 ELSE 0 END)
+            )
+        )  < 0.2
+-- -------------------------------------------------------------
+-- Q5. 3642. Find Books with Polarized Opinions
+-- url: https://leetcode.com/problems/find-books-with-polarized-opinions/description/
+-- -------------------------------------------------------------
+-- A book has polarized opinions if it has at least one rating ≥ 4 and at least one rating ≤ 2 -> reading_sessions
+-- Only consider books that have at least 5 reading sessions -> reading_sessions
+-- Calculate the rating spread as (highest_rating - lowest_rating) -> reading_sessions
+-- Calculate the polarization score as the number of extreme ratings (ratings ≤ 2 or ≥ 4) divided by total sessions -> reading_sessions
+-- Only include books where polarization score ≥ 0.6 (at least 60% extreme ratings) -> reading_sessions
+
+WITH reading_sessions_summary_cte as (
+    SELECT
+        book_id,
+        SUM(CASE WHEN session_rating >= 4 THEN 1 ELSE 0 END) as is_rating_at_least_greater_than_4,
+        SUM(CASE WHEN session_rating <= 2 THEN 1 ELSE 0 END) as is_rating_at_least_less_than_2,
+        COUNT(*) as total_session,
+        MAX(session_rating) - min(session_rating) as rating_spread,
+        SUM(CASE 
+                WHEN session_rating >= 4 or session_rating <= 2 THEN 1 
+                ELSE 0 
+            END) as extreme_ratings_count
+    FROM reading_sessions 
+    GROUP BY book_id 
+)
+SELECT
+    b.book_id,
+    b.title,
+    b.author,
+    b.genre,
+    b.pages,
+    r.rating_spread,
+    ROUND(r.extreme_ratings_count / r.total_session, 2) as polarization_score
+FROM books b
+INNER JOIN reading_sessions_summary_cte r
+ON b.book_id = r.book_id 
+    AND r.is_rating_at_least_greater_than_4 >= 1 
+    AND r.is_rating_at_least_less_than_2 >= 1
+    AND r.total_session >= 5
+    AND r.extreme_ratings_count / r.total_session >= 0.6
+ORDER BY polarization_score DESC, b.title DESC;
+
+-- OPTIMIZE
+SELECT
+    b.book_id,
+    b.title,
+    b.author,
+    b.genre,
+    b.pages,
+    MAX(r.session_rating) - MIN(r.session_rating) as rating_spread,
+    ROUND(
+            SUM(CASE WHEN r.session_rating >= 4 or r.session_rating <= 2 THEN 1 ELSE 0 END) / COUNT(*), 
+            2
+        ) as polarization_score
+FROM books b
+INNER JOIN reading_sessions r
+ON b.book_id = r.book_id 
+GROUP BY b.book_id
+HAVING 
+    SUM(CASE WHEN r.session_rating >= 4 THEN 1 ELSE 0 END) >= 1 
+    AND SUM(CASE WHEN r.session_rating <= 2 THEN 1 ELSE 0 END) >= 1
+    AND COUNT(*) >= 5
+    AND SUM(CASE WHEN r.session_rating >= 4 or r.session_rating <= 2 THEN 1 ELSE 0 END) / COUNT(*) >= 0.6
+ORDER BY polarization_score DESC, b.title DESC;
+
+-- -------------------------------------------------------------
+-- Q6. 3626. Find Stores with Inventory Imbalance
+-- url: https://leetcode.com/problems/find-stores-with-inventory-imbalance/description/
+-- -------------------------------------------------------------
