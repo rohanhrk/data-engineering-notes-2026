@@ -287,3 +287,133 @@ def isRotated(self,s1,s2):
     
     
     return True if flag1 or flag2 else False
+
+# ----------------------------------------------------
+# Q11. String Duplicates Removal
+# url: https://www.geeksforgeeks.org/problems/remove-all-duplicates-from-a-given-string4321/1
+# ----------------------------------------------------
+def removeDuplicates(self, s):
+    # code here
+    ch_set = set()
+    result = ""
+    
+    for ch in s:
+        if ch in ch_set:
+            continue
+        
+        ch_set.add(ch)
+        result += ch
+        
+    return result
+
+# ----------------------------------------------------
+# Q12. Most Frequent Character
+# url: https://www.geeksforgeeks.org/problems/maximum-occuring-character-1587115620/1
+# ----------------------------------------------------
+def getMaxOccuringChar(self, s):
+    # code here
+    freq_char = [0] * 26
+    max_freq_count = -float("inf")
+    max_freq_char = ''
+    
+    for ch in s:
+        freq_char[ord(ch) - ord('a')] += 1
+        
+        # If current current characters frequency is more than overall frequency 
+        # update max_freq_count and max_freq_char
+        if freq_char[ord(ch) - ord('a')] > max_freq_count:
+            max_freq_count = freq_char[ord(ch) - ord('a')]
+            max_freq_char = ch
+        
+        # If current current characters frequency is equal to overall frequency 
+        # pick only lexicographically smaller character
+        elif freq_char[ord(ch) - ord('a')] == max_freq_count and ch < max_freq_char:
+            max_freq_char = ch
+            
+    return max_freq_char
+
+# ----------------------------------------------------
+# Q13. Replace Consecutive Two Same with One
+# url: https://www.geeksforgeeks.org/problems/consecutive-elements2306/1
+# ----------------------------------------------------
+def removeDuplicates(self, s):
+    # code here
+    result = ""
+    st_as_list = []
+    
+    for ch in s:
+        if st_as_list and st_as_list[len(st_as_list) - 1] == (ch):
+            continue
+        st_as_list.append(ch)
+        
+    result = result.join(st_as_list)
+    return result
+
+# ----------------------------------------------------
+# Q14. Panagram Checking
+# url: https://www.geeksforgeeks.org/problems/pangram-checking-1587115620/1
+# ----------------------------------------------------
+def checkPangram(self,s):
+    #code here
+    char_set = set()
+    
+    for ch in s:
+        if ch >= 'a' and ch <= 'z':
+            char_set.add(ord(ch) - ord('a'))
+        elif ch >= 'A' and ch <= 'Z':
+            char_set.add(ord(ch) - ord('A'))
+
+    return True if len(char_set) == 26 else False
+
+# ----------------------------------------------------
+# Q15. Run Length Encoding
+# url: https://www.geeksforgeeks.org/problems/run-length-encoding/1
+# ----------------------------------------------------
+def encode(self, s: str) -> str:
+    # code here
+    count = 1
+    ch = s[0]
+    result = ""
+    
+    for i in range(1, len(s)):
+        if s[i] != s[i - 1]:
+            result += ch + str(count)
+            ch = s[i]
+            count = 1
+            continue
+        
+        count += 1
+    
+    result += ch + str(count)
+    
+    return result
+    
+# ----------------------------------------------------
+# Q16. Remaining String
+# url: https://www.geeksforgeeks.org/problems/remaining-string3515/1
+# ----------------------------------------------------
+def printString(self, s, ch, count):
+    # code here
+    idx = 0
+    res = ""
+    
+    for curr_c in s:
+        if curr_c == ch:
+            count -= 1
+            
+            if count == 0:
+                idx += 1
+                res = s[idx:]
+                return res
+            
+        idx += 1
+        
+    return res
+
+# ----------------------------------------------------
+# Q17. Count Words in a String
+# url: https://www.geeksforgeeks.org/problems/count-number-of-words1500/1
+# ----------------------------------------------------
+def countWords(self, s: str) -> int:
+    # code here
+    return len(s.split())

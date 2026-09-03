@@ -295,3 +295,292 @@ ORDER BY polarization_score DESC, b.title DESC;
 -- Q6. 3626. Find Stores with Inventory Imbalance
 -- url: https://leetcode.com/problems/find-stores-with-inventory-imbalance/description/
 -- -------------------------------------------------------------
+WITH inventory_summary_cte as (
+    SELECT 
+        store_id,
+        MAX(price) as highest_price,
+        MIN(price) as lowest_price,
+        COUNT(DISTINCT product_name) as distinct_products
+    FROM inventory 
+    GROUP BY store_id 
+    /*
+        1   999.99  19.99   4
+        2   699.99  15.99   4
+        3   499.99  29.99   4
+        4   299.99  49.99   2
+        5   599.99  199.99  2
+    */
+), expensive_product_details as (
+    SELECT
+        i1.store_id,
+        i1.highest_price,
+        i1.distinct_products,
+        i2.product_name,
+        i2.quantity
+    FROM inventory_summary_cte i1
+    INNER JOIN inventory i2
+    ON i1.store_id = i2.store_id
+    AND i1.highest_price = i2.price
+    AND i1.distinct_products >= 3
+
+    /*
+        1   999.99  4   Laptop  5
+        2   699.99  4   Phone   3    
+        3   499.99  4   
+        4   299.99  2
+        5   599.99  2
+    */
+), cheapest_product_details as (
+    SELECT
+        i1.store_id,
+        i1.lowest_price,
+        i1.distinct_products,
+        i2.product_name,
+        i2.quantity
+    FROM inventory_summary_cte i1
+    INNER JOIN inventory i2
+    ON i1.store_id = i2.store_id
+    AND i1.lowest_price = i2.price
+    AND i1.distinct_products >= 3
+)
+
+SELECT
+    s.store_id,
+    s.store_name,
+    s.location,
+    e.product_name as most_exp_product,
+    c.product_name as cheapest_product,
+    ROUND(c.quantity/e.quantity, 2) as imbalance_ratio  
+FROM expensive_product_details e
+INNER JOIN cheapest_product_details c
+ON e.store_id = c.store_id
+AND e.quantity < c.quantity
+INNER JOIN stores s
+ON e.store_id = s.store_id
+ORDER BY imbalance_ratio DESC, s.store_name
+
+-- -------------------------------------------------------------
+-- Q7. 3475. DNA Pattern Recognition 
+-- url: https://leetcode.com/problems/dna-pattern-recognition/description/
+-- -------------------------------------------------------------
+SELECT
+    *,
+    CASE
+        WHEN dna_sequence REGEXP "^ATG" THEN 1
+        ELSE 0
+    END as has_start,
+    CASE
+        WHEN dna_sequence LIKE "%TAA" or dna_sequence LIKE "%TAG" or dna_sequence LIKE "%TGA" THEN 1
+        ELSE 0
+    END as has_stop,
+    CASE
+        WHEN dna_sequence REGEXP ".?ATAT.?" THEN 1
+        ELSE 0
+    END as has_atat,
+    CASE
+        WHEN dna_sequence LIKE "%GGG%" THEN 1
+        ELSE 0
+    END as has_ggg
+FROM Samples
+
+-- -------------------------------------------------------------
+-- Q8. 1393. Capital Gain/Loss
+-- url: https://leetcode.com/problems/capital-gainloss/description/
+-- -------------------------------------------------------------
+WITH total_price_by_stock_each_op_cte as (
+    SELECT
+        stock_name,
+        operation,
+        SUM(price) as total_price
+    FROM Stocks
+    GROUP BY stock_name, operation
+)
+SELECT
+    t1.stock_name,
+    t2.total_price - t1.total_price as capital_gain_loss
+FROM total_price_by_stock_each_op_cte t1
+INNER JOIN total_price_by_stock_each_op_cte t2
+ON t1.stock_name = t2.stock_name 
+    AND t1.operation = 'Buy' 
+    AND t2.operation = 'Sell'
+
+
+-- -------------------------------------------------------------
+-- Q9. 3497. Analyze Subscription Conversion 
+-- url: https://leetcode.com/problems/analyze-subscription-conversion/description/
+-- -------------------------------------------------------------
+WITH avg_activity_durations_cte as (
+    SELECT
+        user_id,
+        activity_type,
+        ROUND(AVG(activity_duration), 2) as avg_activity_durations
+    FROM UserActivity
+    WHERE activity_type != 'cancelled'
+    GROUP BY user_id, activity_type
+)
+
+SELECT 
+    t1.user_id,
+    t1.avg_activity_durations as trial_avg_duration,
+    t2.avg_activity_durations as paid_avg_duration
+FROM avg_activity_durations_cte t1
+INNER JOIN avg_activity_durations_cte t2
+ON t1.user_id = t2.user_id
+AND t1.activity_type = 'free_trial' 
+AND t2.activity_type = 'paid'
+ORDER BY t1.user_id
+
+-- -------------------------------------------------------------
+-- Q10. 3220. Odd and Even Transactions
+-- url: https://leetcode.com/problems/odd-and-even-transactions/
+-- -------------------------------------------------------------
+SELECT
+    transaction_date,
+    SUM(
+        CASE
+            WHEN amount % 2 != 0 THEN amount
+            ELSE 0
+        END
+     ) as odd_sum,
+    SUM(
+        CASE
+            WHEN amount % 2 = 0 THEN amount
+            ELSE 0
+        END
+     ) as even_sum
+FROM transactions
+GROUP BY transaction_date
+ORDER BY transaction_date;
+
+-- -------------------------------------------------------------
+-- Q11. 3564. Seasonal Sales Analysis
+-- url: https://leetcode.com/problems/seasonal-sales-analysis/description/
+-- -------------------------------------------------------------
+WITH product_sale_by_seasons_cte as (
+    SELECT
+        p.product_id,
+        p.product_name,
+        p.category,
+        s.quantity,
+        s.price * s.quantity as revenue,
+        CASE
+            WHEN month(sale_date) in (12, 01, 02) THEN "Winter"
+            WHEN month(sale_date) in (03, 04, 05) THEN "Spring"
+            WHEN month(sale_date) in (06, 07, 08) THEN "Summer"
+            ELSE "Fall"
+        END as season
+    FROM products p
+    INNER JOIN sales s
+    ON p.product_id = s.product_id
+),
+product_sale_grouped as (
+    SELECT
+        season,
+        category,
+        SUM(quantity) as total_quantity,
+        SUM(revenue) as total_revenue
+    FROM product_sale_by_seasons_cte
+    GROUP BY season, category
+),
+ranking_cte as (
+    SELECT
+        *,
+        ROW_NUMBER() OVER(
+                            PARTITION BY season 
+                            ORDER BY total_quantity DESC, 
+                                     total_revenue DESC, 
+                                     category
+                         ) as rnk
+    FROM product_sale_grouped
+)
+SELECT 
+    season,
+    category,
+    total_quantity,
+    total_revenue
+FROM ranking_cte
+WHERE rnk = 1
+
+
+-- -------------------------------------------------------------
+-- Q12. 3521. Find Product Recommendation Pairs
+-- url: https://leetcode.com/problems/find-product-recommendation-pairs/description/
+-- -------------------------------------------------------------
+WITH product_details as (
+    SELECT 
+        p1.product_id,
+        p1.category,
+        p2.user_id
+    FROM ProductInfo p1
+    INNER JOIN ProductPurchases p2
+    ON p1.product_id = p2.product_id
+)
+
+SELECT
+    t1.product_id as product1_id, 
+    t2.product_id as product2_id,
+    t1.category as product1_category,
+    t2.category as product2_category,
+    COUNT(*) as customer_count
+FROM product_details t1
+INNER JOIN product_details t2
+ON t1.user_id = t2.user_id and t1.product_id < t2.product_id
+GROUP BY t1.product_id, t2.product_id, t1.category, t2.category
+HAVING customer_count >= 3
+ORDER BY customer_count DESC, product1_id, product2_id
+
+-- -------------------------------------------------------------
+-- Q13. 3601. Find Drivers with Improved Fuel Efficiency
+-- url: https://leetcode.com/problems/find-drivers-with-improved-fuel-efficiency/description/
+-- -------------------------------------------------------------
+WITH both_halves_fuel_efficiency as (
+    SELECT 
+        driver_id,
+        AVG(CASE WHEN month(trip_date) between 01 AND 06 THEN distance_km/fuel_consumed END) as first_half_avg,
+        AVG(CASE WHEN month(trip_date) between 07 AND 12 THEN distance_km/fuel_consumed END) as second_half_avg
+    FROM trips  
+    GROUP BY driver_id
+)
+SELECT 
+    d.driver_id,
+    d.driver_name,
+    ROUND(b.first_half_avg, 2) as first_half_avg,
+    ROUND(b.second_half_avg, 2) as second_half_avg,
+    ROUND(b.second_half_avg - b.first_half_avg, 2) as efficiency_improvement
+FROM both_halves_fuel_efficiency b
+INNER JOIN drivers d
+ON b.driver_id = d.driver_id 
+AND b.first_half_avg is not null 
+AND b.second_half_avg - b.first_half_avg > 0
+ORDER BY efficiency_improvement DESC, d.driver_name
+
+-- -------------------------------------------------------------
+-- Q14. 3421. Find Students Who Improved
+-- url: https://leetcode.com/problems/find-students-who-improved/description/
+-- -------------------------------------------------------------
+WITH first_exam_score as (
+    SELECT 
+        *,
+        ROW_NUMBER() OVER(PARTITION BY student_id, subject ORDER BY exam_date) as rnk
+    FROM Scores 
+), latest_exam_score as (
+    SELECT 
+        *,
+        ROW_NUMBER() OVER(PARTITION BY student_id, subject ORDER BY exam_date DESC) as rnk
+    FROM Scores 
+)
+
+SELECT
+    f.student_id,
+    f.subject,
+    f.score as first_score,
+    l.score as latest_score
+FROM first_exam_score f
+INNER JOIN latest_exam_score l
+ON f.student_id = l.student_id
+AND f.rnk = 1 
+AND l.rnk = 1
+AND f.subject = l.subject
+AND f.exam_date != l.exam_date
+AND l.score > f.score
+ORDER BY f.student_id, f.subject
