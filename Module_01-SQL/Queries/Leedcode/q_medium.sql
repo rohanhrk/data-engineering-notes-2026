@@ -584,3 +584,38 @@ AND f.subject = l.subject
 AND f.exam_date != l.exam_date
 AND l.score > f.score
 ORDER BY f.student_id, f.subject
+
+-- -------------------------------------------------------------
+-- Q14. 3586. Find COVID Recovery Patients
+-- url: https://leetcode.com/problems/find-covid-recovery-patients/
+-- -------------------------------------------------------------
+WITH first_positive_patients_cte as (
+    SELECT
+        patient_id,
+        MIN(test_date) as first_positive_date
+    FROM covid_tests
+    WHERE result = 'Positive'
+    GROUP BY patient_id
+), first_negative_patients_cte as (
+    SELECT
+        c.patient_id,
+        MIN(c.test_date) as first_negative_date
+    FROM covid_tests c
+    INNER JOIN first_positive_patients_cte f
+    ON c.patient_id = f.patient_id 
+    AND c.result = 'Negative' 
+    AND f.first_positive_date < c.test_date
+    GROUP BY f.patient_id
+)
+SELECT
+    p.patient_id,
+    p.patient_name,
+    p.age,
+    DATEDIFF(fn.first_negative_date, fp.first_positive_date) as recovery_time
+FROM first_positive_patients_cte fp
+INNER JOIN first_negative_patients_cte fn
+ON fp.patient_id = fn.patient_id
+AND fp.first_positive_date < fn.first_negative_date
+INNER JOIN patients p
+ON fp.patient_id = p.patient_id
+ORDER BY recovery_time, patient_name
