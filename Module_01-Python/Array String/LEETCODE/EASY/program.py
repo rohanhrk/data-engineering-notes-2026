@@ -51,4 +51,18 @@ def longestCommonPrefix(self, strs: List[str]) -> str:
         result += ch
 
     return result
-        
+
+# ----------------------------------------------------
+# Q3. 26. Remove Duplicates from Sorted Array
+# url: https://leetcode.com/problems/remove-duplicates-from-sorted-array/?envType=problem-list-v2&envId=array
+def removeDuplicates(self, nums: List[int]) -> int:
+    unique_count = 0
+    unique_set = set()
+
+    for i in range(len(nums)):
+        if nums[i] not in unique_set:
+            nums[unique_count] = nums[i]
+            unique_count += 1
+            unique_set.add(nums[i])
+
+    return unique_count
