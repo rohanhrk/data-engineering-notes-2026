@@ -131,3 +131,50 @@ WITH joined_cte as (
 SELECT *
 FROM self_joined_cte
 ORDER BY customer_count DESC, category1, category2;
+
+-- -------------------------------------------------------------
+-- Q5. 3764. Most Common Course Pairs
+-- url: https://leetcode.com/problems/most-common-course-pairs/
+-- -------------------------------------------------------------
+WITH top_performing_students_cte as (
+    SELECT 
+        user_id,
+        COUNT(*) as total_completed_courses,
+        AVG(course_rating) as avg_course_rating
+    FROM course_completions 
+    GROUP BY user_id 
+    HAVING total_completed_courses >= 5 
+    AND avg_course_rating >= 4
+), consecutive_pairs_cte as (
+    SELECT
+        c.course_name as first_course,
+        LEAD(c.course_name) OVER(PARTITION BY c.user_id ORDER BY c.completion_date) as second_course
+    FROM course_completions c
+    INNER JOIN top_performing_students_cte t
+    ON c.user_id = t.user_id
+)
+SELECT
+    first_course,
+    second_course,
+    COUNT(*) as transition_count
+FROM consecutive_pairs_cte
+WHERE second_course is not null
+GROUP BY first_course, second_course
+ORDER BY transition_count DESC, first_course, second_course
+
+-- -------------------------------------------------------------
+-- Q6. 3673. Find Zombie Sessions
+-- url: https://leetcode.com/problems/find-zombie-sessions/description/
+-- -------------------------------------------------------------
+SELECT
+    session_id,
+    user_id,
+    TIMESTAMPDIFF(minute, MIN(event_timestamp), MAX(event_timestamp)) as session_duration_minutes,
+    SUM(CASE WHEN event_type = 'scroll' THEN 1 ELSE 0 END) as scroll_count
+FROM app_events
+GROUP BY user_id, session_id
+HAVING scroll_count >= 5 
+AND SUM(CASE WHEN event_type = 'click' THEN 1 ELSE 0 END)/SUM(CASE WHEN event_type = 'scroll' THEN 1 ELSE 0 END) < 0.20
+AND SUM(CASE WHEN event_type = 'purchase' THEN 1 ELSE 0 END) = 0
+AND TIMESTAMPDIFF(minute, MIN(event_timestamp), MAX(event_timestamp)) > 30
+ORDER BY scroll_count DESC, session_id
