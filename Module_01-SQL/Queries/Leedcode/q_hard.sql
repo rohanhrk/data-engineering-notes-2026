@@ -178,3 +178,53 @@ AND SUM(CASE WHEN event_type = 'click' THEN 1 ELSE 0 END)/SUM(CASE WHEN event_ty
 AND SUM(CASE WHEN event_type = 'purchase' THEN 1 ELSE 0 END) = 0
 AND TIMESTAMPDIFF(minute, MIN(event_timestamp), MAX(event_timestamp)) > 30
 ORDER BY scroll_count DESC, session_id
+
+-- -------------------------------------------------------------
+-- Q7. 3832. Find Users with Persistent Behavior Patterns
+-- url: https://leetcode.com/problems/find-users-with-persistent-behavior-patterns/description/
+-- -------------------------------------------------------------
+
+WITH valid_exactly_one_action_per_day as (
+    SELECT
+        user_id, 
+        action_date,
+        COUNT(*) as total_action_per_day
+    FROM activity
+    GROUP BY user_id, action_date
+    HAVING total_action_per_day = 1
+), windowed_same_action_of_consecutive_days_count as (
+    SELECT
+        a.user_id,
+        a.action_date,
+        a.action,
+        ROW_NUMBER() OVER(PARTITION BY user_id, action ORDER BY action_date) as row_num
+    FROM activity a 
+    INNER JOIN valid_exactly_one_action_per_day v
+    ON a.user_id = v.user_id and a.action_date = v.action_date
+),
+valid_behaviourally_stable_user as (
+    SELECT
+        user_id,
+        action,
+        COUNT(*) as streak_length,
+        MIN(action_date) as start_date,
+        MAX(action_date) as end_date
+    FROM windowed_same_action_of_consecutive_days_count
+    GROUP BY user_id, action, (action_date - row_num)
+    HAVING streak_length >= 5
+), 
+ranking_action as (
+    SELECT 
+        *,
+        ROW_NUMBER() OVER(PARTITION BY user_id, action ORDER BY streak_length DESC) as rnk
+    FROM valid_behaviourally_stable_user
+)
+SELECT
+    user_id,
+    action,
+    streak_length,
+    start_date,
+    end_date
+FROM ranking_action
+WHERE rnk = 1
+ORDER BY streak_length DESC, user_id
