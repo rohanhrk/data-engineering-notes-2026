@@ -66,3 +66,71 @@ def removeDuplicates(self, nums: List[int]) -> int:
             unique_set.add(nums[i])
 
     return unique_count
+
+# ----------------------------------------------------
+# Q4. 26. Remove Duplicates from Sorted Array
+# url: https://leetcode.com/problems/remove-element/description/?envType=problem-list-v2&envId=array
+def swap(self, nums, st_idx, end_idx):
+    nums[st_idx], nums[end_idx] = nums[end_idx], nums[st_idx]
+    
+def removeElement(self, nums: List[int], val: int) -> int:
+    k = len(nums)
+    occ_val = 0
+
+    for i in range(len(nums)):
+        if nums[i] == val:
+            k -= 1
+            occ_val += 1
+        elif occ_val > 0:
+            self.swap(nums, i - occ_val, i)
+
+    return k
+
+# ----------------------------------------------------
+# Q5. 35. Search Insert Position
+# url: https://leetcode.com/problems/search-insert-position/?envType=problem-list-v2&envId=array
+
+def searchInsert(self, nums: List[int], target: int) -> int:
+    left = 0
+    right = len(nums) - 1
+
+    while left <= right:
+        mid = left + int((right - left) / 2)
+        print(f"l:{left}, r:{right}, m:{mid}")
+
+        if nums[mid] == target:
+            return mid
+        elif target > nums[mid]:
+            left = mid + 1
+        elif target < nums[mid]:
+            right = mid - 1
+
+    return left
+
+# ----------------------------------------------------
+# Q6. 66. Plus One
+# url: https://leetcode.com/problems/plus-one/?envType=problem-list-v2&envId=array
+
+def plusOne(self, digits: List[int]) -> List[int]:
+    c = 0
+    result = []
+
+    for i in range(len(digits) - 1, -1, -1):
+        sum = 0
+        if i == len(digits) - 1:
+            sum += digits[i] + 1
+        else:
+            sum +=  digits[i] + c
+        
+        rem = sum % 10 #reminder
+        div = int(sum / 10) # divident
+
+        c = div
+        result.append(rem)
+    
+    if c != 0:
+        result.append(c)
+    
+    result = result[::-1]
+
+    return result
