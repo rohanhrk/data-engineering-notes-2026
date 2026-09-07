@@ -228,3 +228,59 @@ SELECT
 FROM ranking_action
 WHERE rnk = 1
 ORDER BY streak_length DESC, user_id
+
+
+-- -------------------------------------------------------------
+-- Q8. 3617. Find Students with Study Spiral Pattern
+-- url: https://leetcode.com/problems/find-students-with-study-spiral-pattern/description/
+-- -------------------------------------------------------------
+WITH windowed_cte as (
+    SELECT
+        *,
+        row_number() over(partition by student_id, subject order by session_date) as grp_id,
+        timestampdiff(
+            day, 
+            coalesce(lag(session_date) over(partition by student_id order by session_date), session_date),
+            session_date
+        ) as consec_date
+    from study_sessions
+), valid_pattern_cte as (
+    SELECT
+        student_id,
+        COUNT(DISTINCT subject) as cycle_length,
+        SUM(hours_studied) as total_study_hours
+    FROM windowed_cte
+    WHERE consec_date <= 2
+    GROUP BY student_id
+    HAVING COUNT(DISTINCT subject) >= 3
+    AND COUNT(session_id) >= 6 
+    AND cycle_length >= 3
+), grouped_distinct_consecutive_subject_cte as (
+    SELECT
+        student_id,
+        grp_id,
+        group_concat(subject order by session_date) as grp_subject
+    FROM windowed_cte
+    GROUP BY student_id, grp_id
+)
+
+SELECT
+    s.student_id,
+    s.student_name,
+    s.major,
+    v.cycle_length,
+    v.total_study_hours
+FROM students s
+INNER JOIN valid_pattern_cte v
+ON s.student_id = v.student_id
+WHERE exists (
+    SELECT
+        1
+    FROM grouped_distinct_consecutive_subject_cte g
+    WHERE v.student_id = g.student_id
+    GROUP BY g.student_id, g.grp_subject
+    HAVING COUNT(*) >= 2
+) 
+ORDER BY cycle_length DESC, total_study_hours DESC
+
+
