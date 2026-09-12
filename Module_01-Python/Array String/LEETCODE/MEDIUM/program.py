@@ -306,3 +306,36 @@ def isValidSudoku(self, board: List[List[str]]) -> bool:
                 track.add(f"{number} in subBox {int(row/3)},{int(col/3)}")
 
     return True
+
+# ===============================================================
+# program 9: 48. Rotate Image
+# URL: https://leetcode.com/problems/rotate-image/
+# ===============================================================
+def swap(self, matrix, row, col):
+    matrix[row][col], matrix[col][row] = matrix[col][row], matrix[row][col]
+def reverse(self, matrix, row):
+    left = 0
+    right = len(matrix[0]) - 1
+
+    while left < right:
+        matrix[row][left], matrix[row][right] = matrix[row][right], matrix[row][left]
+        left += 1
+        right -= 1
+
+def transpose_2d(self, matrix):
+    for r in range(len(matrix)):
+        for c in range(r + 1):
+            if r != c:
+                self.swap(matrix, r, c)
+
+def rotate(self, matrix: List[List[int]]) -> None:
+    """
+    Do not return anything, modify matrix in-place instead.
+    """
+    # transpose
+    self.transpose_2d(matrix)
+
+    # reverse
+    for r in range(len(matrix)):
+        # reverse each row
+        self.reverse(matrix, r)

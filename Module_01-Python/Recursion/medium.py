@@ -74,3 +74,33 @@ def permute(self, nums: List[int]) -> List[List[int]]:
     self.permute_rec(nums, smallAns, ans, visited)
 
     return ans
+
+# ============================================================================
+# program 4 : 47. Permutations II
+# url : https://leetcode.com/problems/permutations-ii/
+# ============================================================================
+# visited_so_far_idx -> picked index so far in the smallAns
+# visited_so_far_num_each_level -> track each level number to restrict dublicate number 
+def permuteUnique_rec(self, nums, smallAns, ans, visited_so_far_idx):
+    if len(nums) == len(smallAns):
+        base = [ele for ele in smallAns]
+        ans.append(base)
+        return
+
+    visited_so_far_num_each_level = [False] * 21
+    for i in range(len(nums)):
+        if not visited_so_far_idx[i] and not visited_so_far_num_each_level[nums[i] + 10]:
+            visited_so_far_idx[i] = True
+            visited_so_far_num_each_level[nums[i] + 10] = True
+            smallAns.append(nums[i])
+            self.permuteUnique_rec(nums, smallAns, ans, visited_so_far_idx)
+            visited_so_far_idx[i] = False
+            smallAns.pop()
+
+def permuteUnique(self, nums: List[int]) -> List[List[int]]:
+    smallAns = []
+    ans = []
+    visited_so_far_idx = [False] * len(nums)
+    self.permuteUnique_rec(nums, smallAns, ans, visited_so_far_idx)
+
+    return ans

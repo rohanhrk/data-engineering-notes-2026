@@ -1,541 +1,1573 @@
-# AI Fundamentals for Data Engineering: Comprehensive Notes
+# AI Fundamentals for Data Engineering
 
-A comprehensive reference guide on Artificial Intelligence, Machine Learning, Deep Learning, Natural Language Processing, and Large Language Models tailored specifically for Data Engineers building and enabling enterprise-grade data platforms and AI systems.
+> **Purpose:** Interview-ready and practical notes for a Data Engineer
+> who needs to understand AI/ML fundamentals and how AI systems depend
+> on data engineering.
+>
+> **Source:** AI Fundamentals For Data Engineering
 
----
+------------------------------------------------------------------------
 
-## 1. AI as a Productivity Multiplier for Data Engineers
+## 1. AI and Data Engineering
 
-Artificial Intelligence acts as an accelerator for data engineers, automating routine tasks, speeding up pipeline design, and enabling rapid troubleshooting.
+### 1.1 AI as a Productivity Multiplier
 
-### Practical Engineering Use Cases
+AI can help Data Engineers complete repetitive engineering work faster,
+but the engineer remains responsible for correctness, production
+readiness, and operational decisions.
 
-* **Code Generation:** Converting natural-language requirements into functional SQL, Python, and PySpark scripts.
-* **Code Explanation & Onboarding:** Deciphering complex legacy queries, Spark execution plans, and unfamiliar codebases.
-* **Debugging & Log Analysis:** Analyzing execution logs, stack traces, and error messages to pinpoint root causes.
-* **Data Quality & Testing:** Generating unit test suites, data-quality assertion checks, and realistic synthetic mock datasets.
-* **Optimization & Refactoring:** Identifying bottleneck transformations in PySpark/SQL and suggesting performance improvements.
-* **Documentation:** Automatically creating pipeline architecture docs, data dictionaries, and source-to-target mapping (STM) sheets.
-
----
-
-### Real-World Engineering Example & Human Validation
-
-#### Input Requirement
-> "Read daily order data from Amazon S3, remove duplicates based on `order_id`, calculate customer-level daily revenue, and load the aggregated results into Snowflake."
-
-#### AI-Generated Artifacts
-1. **PySpark Transformation Code**
-2. **Snowflake DDL & SQL Statements**
-3. **Apache Airflow DAG Definition**
-4. **Great Expectations Data Quality Checks**
-
-```mermaid
+``` mermaid
 flowchart LR
-    A[S3 Bucket - Raw Orders] --> B[PySpark Engine]
-    B -->|1. Deduplicate order_id<br/>2. Aggregate Daily Revenue| C[Clean & Aggregated Data]
-    C -->|3. Load via Stage| D[Snowflake Warehouse]
-    E[Airflow DAG Orchestration] -.-> B
-    F[Data Quality Validations] -.-> C
+    A[Business / Engineering Requirement] --> B[AI Assistant]
+    B --> C[SQL / Python / PySpark]
+    B --> D[Tests / Documentation]
+    B --> E[Debugging Suggestions]
+    C --> F[Data Engineer Review]
+    D --> F
+    E --> F
+    F --> G[Production Pipeline]
 ```
 
-```python
-# Generated PySpark Snippet Example
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, sum as _sum
+### Practical use cases
 
-spark = SparkSession.builder.appName("DailyCustomerRevenue").getOrCreate()
+-   Generate SQL, Python, and PySpark from natural-language
+    requirements.
+-   Explain complex queries, Spark jobs, and unfamiliar code.
+-   Debug pipeline failures from logs and error messages.
+-   Create unit tests, data-quality checks, and sample datasets.
+-   Refactor inefficient code and suggest performance improvements.
+-   Generate documentation, data dictionaries, and source-to-target
+    mappings.
 
-# 1. Read daily order data from S3
-raw_orders = spark.read.option("header", "true").csv("s3a://company-bucket/raw/orders/2026/09/07/*.csv")
+### Example
 
-# 2. Deduplicate based on order_id
-deduped_orders = raw_orders.dropDuplicates(["order_id"])
+**Requirement:** Read daily order data from Amazon S3, remove
+duplicates, calculate customer-level revenue, and load the result into
+Snowflake.
 
-# 3. Calculate customer-level revenue
-customer_revenue = deduped_orders.groupBy("customer_id") \
-    .agg(_sum(col("order_amount").cast("double")).alias("total_revenue"))
+AI can generate:
 
-# Write output to staging area for Snowflake ingestion
-customer_revenue.write.mode("overwrite").parquet("s3a://company-bucket/staged/daily_revenue/2026/09/07/")
+-   PySpark transformation code
+-   Snowflake SQL
+-   Airflow DAG structure
+-   Data-quality checks
+-   Initial documentation
+
+But the Data Engineer must validate:
+
+-   Join and aggregation logic
+-   Incremental loading strategy
+-   Partitioning and performance
+-   Failure recovery and idempotency
+-   Security and production readiness
+
+### Common tools mentioned
+
+-   ChatGPT
+-   Claude
+-   Cursor
+-   Antigravity
+-   Google Gemini
+-   GitHub Copilot
+
+> **Interview point:** AI is an engineering accelerator, not a
+> replacement for engineering ownership.
+
+------------------------------------------------------------------------
+
+## 2. Data Engineers Enable Production AI
+
+AI applications depend on reliable, fresh, and governed data.
+
+``` mermaid
+flowchart LR
+    A[Source Data] --> B[Ingestion]
+    B --> C[Cleaning]
+    C --> D[Transformation]
+    D --> E[Chunking]
+    E --> F[Embeddings]
+    F --> G[Vector Database]
+    G --> H[AI Application / RAG]
+    I[Document Changes] --> B
 ```
 
-#### What the Data Engineer MUST Validate
-While AI accelerates the baseline code output, production engineering responsibility remains with the engineer:
+### RAG / Enterprise Search example
 
-* **Join & Aggregation Logic:** Ensure correct handling of `NULL` values, correct key bindings, and proper fan-out prevention.
-* **Incremental Loading Strategy:** Verify state management, CDC mechanics, watermark timestamps, and append vs. upsert strategies.
-* **Partitioning & Performance:** Ensure proper Spark partition sizing, avoiding small-file problems, shuffling optimizations, and cluster scaling.
-* **Idempotency & Recovery:** Verify that re-running the job produces identical results without duplicating destination records.
-* **Security & Production Readiness:** Sanitize credentials (use Secrets Manager), enforce RBAC, and handle governance constraints.
+Suppose an employee asks:
 
----
+> "What is the company leave policy?"
 
-### Common Tools in the Data AI Ecosystem
+The data pipeline may need to:
 
-```
-+-------------------------------------------------------------------+
-|                        AI Productivity Tools                       |
-+-------------------------------------------------------------------+
-|  Conversational Assistants |  ChatGPT, Claude, Google Gemini      |
-|  IDE Integrations          |  Cursor, Antigravity, GitHub Copilot |
-+-------------------------------------------------------------------+
-```
+1.  Ingest PDFs, documents, and web pages.
+2.  Extract and clean text.
+3.  Break documents into chunks.
+4.  Generate embeddings.
+5.  Store embeddings in a vector database.
+6.  Keep the index updated when source documents change.
 
----
+### Tools mentioned in the source
 
-## 2. Data Engineers Enabling Production AI Systems
+-   Airflow
+-   Spark
+-   AWS Glue
+-   LangChain
+-   LlamaIndex
+-   OpenAI embeddings
+-   Amazon OpenSearch
 
-AI applications (such as Enterprise Search and RAG) require clean, fresh, governed, and well-indexed data pipelines to deliver reliable answers. Data engineers build and maintain these underlying systems.
+> **Key idea:** A production AI system is only as useful as the data
+> pipeline that supplies and maintains its data.
 
-```mermaid
+------------------------------------------------------------------------
+
+# 3. Artificial Intelligence (AI)
+
+## 3.1 What is AI?
+
+**Artificial Intelligence** is the broad field of building systems that
+can perform tasks that normally require human intelligence.
+
+Examples:
+
+-   Decision making
+-   Language understanding
+-   Image recognition
+-   Planning
+-   Problem solving
+-   Content generation
+
+``` mermaid
 flowchart TD
-    subgraph Data Processing Pipeline
-        A[Unstructured Data<br/>PDFs, Docs, Web Pages] --> B[Ingest Engine<br/>Airflow / Spark / AWS Glue]
-        B --> C[Text Extraction & Cleaning]
-        C --> D[Document Chunking]
-        D --> E[Embedding Generation<br/>e.g., OpenAI / HuggingFace]
-    end
-
-    subgraph Vector Store & Retrieval
-        E --> F[(Vector Database<br/>OpenSearch / Pinecone /pgvector)]
-        G[User Query] --> H[Retrieval Augmented Generation<br/>LangChain / LlamaIndex]
-        F <--> H
-        H --> I[Generative AI Response]
-    end
+    AI[Artificial Intelligence]
+    AI --> Rules[Rules]
+    AI --> Search[Search]
+    AI --> ML[Machine Learning]
+    AI --> DL[Deep Learning]
+    AI --> LLM[Large Language Models]
+    AI --> Agents[AI Agents]
 ```
 
-### RAG (Retrieval-Augmented Generation) Architecture Breakdown
+### Example: E-commerce support
 
-1. **Ingestion & Extraction:** Extract raw unstructured text from PDFs, HTML, logs, and database tables.
-2. **Text Cleaning & Formatting:** Remove boilerplate formatting, normalize metadata, and enforce structural cleanliness.
-3. **Chunking Strategy:** Split long text documents into overlapping, context-preserving text chunks (e.g., 512 tokens with 50-token overlap).
-4. **Vector Embedding:** Convert chunks into dense mathematical vector representations using embedding models.
-5. **Vector Indexing:** Persist vectors in specialized databases (e.g., Amazon OpenSearch, Pinecone, pgvector) with automated sync pipelines.
+For:
 
----
+> "Where is my order?"
 
-## 3. The Artificial Intelligence Umbrella
+An AI system may:
 
-AI is a broad field of computer science dedicated to building systems capable of performing tasks that traditionally require human intelligence.
+1.  Understand the question.
+2.  Find the customer's order.
+3.  Check shipment status.
+4.  Decide what information is relevant.
+5.  Generate a response.
 
-```mermaid
+------------------------------------------------------------------------
+
+# 4. Machine Learning (ML)
+
+## 4.1 What is Machine Learning?
+
+Machine Learning teaches computers to learn patterns from data rather
+than following only fixed, pre-programmed rules.
+
+### Traditional programming
+
+``` mermaid
+flowchart LR
+    A[Rules] --> C[Program]
+    B[Input Data] --> C
+    C --> D[Output]
+```
+
+Example:
+
+``` text
+IF email contains "win money"
+AND sender is unknown
+THEN mark as spam
+```
+
+### Machine Learning
+
+``` mermaid
+flowchart LR
+    A[Input Data X] --> C[ML Algorithm]
+    B[Correct Answers / Labels Y] --> C
+    C --> D[Learned Model]
+    D --> E[Predictions]
+```
+
+Instead of explicitly writing every rule:
+
+1.  Provide input data.
+2.  Provide correct answers when available.
+3.  The algorithm learns patterns.
+4.  The resulting mathematical model represents those learned patterns.
+
+------------------------------------------------------------------------
+
+## 4.2 Features, Labels, and Models
+
+Consider house-price prediction.
+
+-   **Features (X):** Size, Bedrooms, Location
+-   **Label / Target (Y):** Price
+-   **Model:** Mathematical function mapping inputs to an output.
+
+A simplified model can be represented as:
+
+``` text
+Price = (w1 × Size) + (w2 × Bedrooms) + (w3 × Location) + bias
+```
+
+Where:
+
+-   `w1`, `w2`, `w3` = learned weights
+-   `bias` = additional adjustable value
+
+### How training works
+
+``` mermaid
+flowchart TD
+    A[Start with initial weights] --> B[Make prediction]
+    B --> C[Compare with actual value]
+    C --> D[Calculate error]
+    D --> E[Adjust weights]
+    E --> B
+    B --> F[Repeat many times]
+```
+
+The repeated process of learning from examples and adjusting the model
+is called **training**.
+
+------------------------------------------------------------------------
+
+## 4.3 Core ML Terms
+
+  -----------------------------------------------------------------------
+  Term                                Meaning
+  ----------------------------------- -----------------------------------
+  Feature                             Input variable used by a model
+
+  Label / Target                      Expected output variable
+
+  Model                               Mathematical function mapping input
+                                      to output
+
+  Training                            Learning patterns from data
+
+  Testing                             Evaluating a model on unseen data
+
+  Overfitting                         Model memorizes training data
+                                      instead of learning general
+                                      patterns
+  -----------------------------------------------------------------------
+
+### Overfitting
+
+``` mermaid
+flowchart LR
+    A[Training Data] --> B[Model]
+    B --> C[Very Good Training Performance]
+    B --> D[Poor Generalization on Unseen Data]
+```
+
+> **Interview definition:** Overfitting happens when a model learns the
+> training data too closely, including patterns that do not generalize
+> to unseen data.
+
+------------------------------------------------------------------------
+
+# 5. Types of Machine Learning
+
+``` mermaid
+flowchart TD
+    ML[Machine Learning]
+    ML --> S[Supervised Learning]
+    ML --> U[Unsupervised Learning]
+    ML --> R[Reinforcement Learning]
+
+    S --> SR[Regression]
+    S --> SC[Classification]
+
+    U --> UC[Clustering]
+    U --> UA[Anomaly Detection]
+    U --> UAR[Association Rules]
+```
+
+------------------------------------------------------------------------
+
+## 5.1 Supervised Learning
+
+Supervised learning learns from examples where the correct answer is
+known.
+
+### Input
+
+``` text
+X = Input features
+Y = Correct answer / label
+```
+
+``` mermaid
+flowchart LR
+    A[Features X] --> C[Supervised ML Model]
+    B[Known Label Y] --> C
+    C --> D[Learned Pattern]
+    D --> E[Prediction for New Data]
+```
+
+### Example: Customer churn
+
+Training data might contain:
+
+-   Usage
+-   Complaints
+-   Contract type
+-   Churned? → label
+
+For a new customer:
+
+``` text
+Usage = Low
+Complaints = 6
+Contract = Monthly
+
+        ↓
+
+      Model
+
+        ↓
+
+Churn Probability = 91%
+```
+
+### Two major supervised-learning problems
+
+#### Regression
+
+Predicts a **number**.
+
+Example:
+
+``` text
+House features → Model → House price = ₹85 lakh
+```
+
+Algorithms mentioned in the source:
+
+-   Linear Regression
+-   Decision Tree Regressor
+
+#### Classification
+
+Predicts a **category**.
+
+Examples:
+
+-   Spam / Not Spam
+-   Churn / No Churn
+
+Algorithms mentioned in the source:
+
+-   Random Forest
+-   KNN
+-   Naive Bayes
+-   SVM
+
+### Regression vs Classification
+
+  -----------------------------------------------------------------------
+  Aspect                  Regression              Classification
+  ----------------------- ----------------------- -----------------------
+  Output                  Numeric value           Category
+
+  Example                 House price             Spam / Not Spam
+
+  Source examples         Linear Regression,      Random Forest, KNN,
+                          Decision Tree Regressor Naive Bayes, SVM
+  -----------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+# 6. Unsupervised Learning
+
+Unsupervised learning finds patterns when there is no predefined correct
+output/label.
+
+``` mermaid
+flowchart LR
+    A[Customer Data] --> B[Unsupervised Algorithm]
+    B --> C[Discover Similar Patterns]
+    C --> D[Cluster 1]
+    C --> E[Cluster 2]
+    D --> F[High Spend / Frequent]
+    E --> G[Low Spend / Occasional]
+```
+
+The algorithm discovers groups; the business can interpret those groups
+later.
+
+For example:
+
+-   Premium customers
+-   Regular customers
+-   Occasional customers
+
+### Common uses
+
+#### Clustering
+
+Customer segmentation.
+
+#### Anomaly detection
+
+Finding unusual transaction patterns.
+
+#### Association rules
+
+Finding relationships such as:
+
+``` text
+Customers buying bread
+        ↓
+often also buy butter
+```
+
+> **Important distinction:** Supervised learning learns from known
+> answers; unsupervised learning discovers structure without predefined
+> labels.
+
+------------------------------------------------------------------------
+
+# 7. Reinforcement Learning
+
+Reinforcement Learning learns through **actions and feedback**.
+
+Unlike supervised learning, there does not need to be a dataset
+containing the correct answer for every situation.
+
+``` mermaid
+flowchart LR
+    A[Agent] -->|Action| B[Environment]
+    B -->|State / Outcome| A
+    B -->|Reward / Penalty| A
+```
+
+The agent learns:
+
+> Which actions maximize total future reward?
+
+### Example
+
+An AI learns to play a game:
+
+1.  Take an action.
+2.  Observe what happens.
+3.  Receive reward or penalty.
+4.  Adjust future behavior.
+5.  Repeat many times.
+
+### Practical use cases
+
+-   Game-playing AI
+-   Robot navigation/control
+-   Resource allocation
+-   Dynamic recommendation strategies
+-   Some autonomous-system decision problems
+
+------------------------------------------------------------------------
+
+# 8. Neural Networks
+
+A neural network is a machine-learning model made from connected
+computational units called neurons.
+
+### Important components
+
+  -----------------------------------------------------------------------
+  Component                           Meaning
+  ----------------------------------- -----------------------------------
+  Weight                              Represents how important an input
+                                      is
+
+  Bias                                Additional adjustable value
+
+  Activation function                 Determines how the calculated
+                                      signal moves forward
+
+  Neuron                              One calculation unit
+
+  Hidden layer                        Collection of neurons learning
+                                      intermediate patterns
+
+  Neural network                      Many connected neurons/layers
+  -----------------------------------------------------------------------
+
+``` mermaid
+flowchart LR
+    A[Inputs] --> B[Neuron]
+    B --> C[Weighted Calculation]
+    C --> D[Activation Function]
+    D --> E[Output]
+```
+
+A larger network connects many such neurons into layers.
+
+------------------------------------------------------------------------
+
+# 9. Deep Learning
+
+Deep Learning uses neural networks containing **multiple layers** to
+learn increasingly complex patterns.
+
+``` mermaid
+flowchart LR
+    A[Input] --> B[Hidden Layer 1]
+    B --> C[Hidden Layer 2]
+    C --> D[Hidden Layer 3]
+    D --> E[...]
+    E --> F[Hidden Layer N]
+    F --> G[Output]
+```
+
+More layers allow the model to learn more complex representations.
+
+## Example: Invoice understanding
+
+An invoice image can be processed through increasingly meaningful
+representations:
+
+``` text
+Pixels
+  ↓
+Lines & Shapes
+  ↓
+Characters
+  ↓
+Words
+  ↓
+Fields
+  ↓
+Invoice Number / Vendor / Total Amount
+```
+
+### Where deep learning became important
+
+-   Image recognition
+-   Speech recognition
+-   Language translation
+-   Document understanding
+-   Autonomous systems
+-   Large Language Models
+
+------------------------------------------------------------------------
+
+# 10. NLP --- Natural Language Processing
+
+**Natural Language Processing (NLP)** is the area of AI focused on
+processing, understanding, and generating human language.
+
+### Common language data
+
+-   Emails
+-   Documents
+-   Chats
+-   Reviews
+-   Support tickets
+-   Contracts
+-   Questions
+
+### Example: Sentiment analysis
+
+``` text
+"Delivery was fast but the product quality was terrible."
+                    ↓
+            Language Processing
+                    ↓
+               Sentiment
+                    ↓
+                NEGATIVE
+```
+
+### NLP use cases
+
+-   Text classification
+-   Sentiment analysis
+-   Translation
+-   Summarization
+-   Chatbots
+
+## Evolution of NLP
+
+``` mermaid
+flowchart LR
+    A[Rule-Based NLP] --> B[Machine Learning NLP]
+    B --> C[Deep Learning NLP]
+    C --> D[Transformers / LLMs]
+```
+
+### Important clarification
+
+NLP is **not simply another layer below Deep Learning**.
+
+Think of it this way:
+
+``` mermaid
+flowchart TD
+    A[NLP = Language Problem Domain]
+    B[Machine Learning = Technique]
+    C[Deep Learning = Technique]
+    D[Transformers / LLMs = Model Architecture / Family]
+
+    B --> A
+    C --> A
+    D --> A
+```
+
+NLP describes the **problem domain: language**.
+
+Machine Learning and Deep Learning are techniques that can be used to
+solve NLP problems.
+
+------------------------------------------------------------------------
+
+# 11. Generative AI
+
+Generative AI is a category of AI designed to generate new content based
+on patterns learned from large amounts of data.
+
+### It can generate
+
+-   Text
+-   Code
+-   Images
+-   Audio
+-   Video
+
+## Generative AI vs Traditional ML
+
+``` mermaid
+flowchart LR
+    A[Traditional ML] --> B[Predict]
+    B --> C["Will customer churn? → 82%"]
+
+    D[Generative AI] --> E[Create]
+    E --> F["Generate SQL / Summarize / Answer / Create Image"]
+```
+
+### Data Engineering Copilot example
+
+Requirement:
+
+> "Write a PySpark job that reads orders from S3, removes duplicates,
+> and calculates daily revenue."
+
+``` mermaid
+flowchart LR
+    A[Natural Language Requirement] --> B[LLM]
+    B --> C[Generated PySpark]
+    C --> D[Data Engineer Review]
+    D --> E[Production Pipeline]
+```
+
+> **Key idea:** Traditional ML is commonly used to predict outcomes;
+> Generative AI creates new content.
+
+------------------------------------------------------------------------
+
+# 12. Large Language Models (LLMs)
+
+## 12.1 What is an LLM?
+
+An LLM is a deep-learning model designed using the **Transformer
+architecture**, trained on massive amounts of text/code to learn
+language patterns and predict the next token.
+
+At its core, an LLM performs **next-token prediction**.
+
+### Example
+
+Prompt:
+
+``` text
+"The capital of France is"
+```
+
+The model might calculate probabilities such as:
+
+``` text
+Paris   → 96%
+London  → 1%
+Berlin  → 0.5%
+Others  → remaining probability
+```
+
+The model selects a token and then predicts the next token again.
+
+``` mermaid
+flowchart LR
+    A[Prompt] --> B[Predict Next Token]
+    B --> C[Add Selected Token to Context]
+    C --> B
+    B --> D[Complete Response]
+```
+
+### Why "Large"?
+
+Modern LLMs are trained using:
+
+-   Massive datasets
+-   Billions of model parameters
+-   Large GPU/accelerator clusters
+-   Deep neural-network architectures
+
+An LLM is fundamentally a powerful next-token prediction model that has
+learned language patterns, knowledge, and reasoning behaviours from
+enormous amounts of data.
+
+------------------------------------------------------------------------
+
+# 13. LLM Model Types
+
+The source groups popular models into two broad categories.
+
+## Closed / Proprietary
+
+Examples mentioned:
+
+-   GPT
+-   Claude
+-   Gemini
+-   Grok
+-   Amazon Nova
+
+Typical access pattern:
+
+``` mermaid
+flowchart LR
+    A[Your Application] --> B[API]
+    B --> C[Provider's Model]
+```
+
+The provider keeps the model weights private. You normally do not
+download and host the actual model yourself.
+
+## Open / Open-weight focused
+
+Examples mentioned:
+
+-   Llama
+-   DeepSeek
+-   Qwen
+-   Mistral
+
+Typical pattern:
+
+``` mermaid
+flowchart LR
+    A[Model Weights] --> B[Download]
+    B --> C[Your GPU / Cloud]
+    C --> D[Fine-tune]
+    D --> E[Deploy]
+```
+
+This can allow an enterprise to run a model on its own infrastructure
+instead of calling an external LLM API.
+
+------------------------------------------------------------------------
+
+# 14. Parameters
+
+When someone says:
+
+> "This is a 100B parameter LLM."
+
+It means the neural network contains roughly **100 billion learned
+numerical values**.
+
+These parameters control how information flows through the neural
+network.
+
+The source notes that most parameters are weights, along with some
+biases and other learned values.
+
+### Why more parameters?
+
+The main advantage described is greater **model capacity** --- the
+ability to learn and represent more complex patterns.
+
+> **Do not equate parameter count directly with model quality.**
+> Parameter count describes scale/capacity; the source does not state
+> that it alone determines model quality.
+
+------------------------------------------------------------------------
+
+# 15. Core LLM Terms
+
+## 15.1 Token
+
+LLMs do not directly process normal words as whole concepts. Text is
+broken into smaller units called **tokens**.
+
+The source gives the rough rule:
+
+> **4 English characters ≈ 1 token**
+
+This is only an approximation.
+
+A token can be:
+
+-   A complete word
+-   Part of a word
+-   A character
+-   Punctuation
+-   A word together with preceding space
+
+### Example
+
+``` text
+"Data Engineering is amazing"
+
+          ↓ Tokenizer
+
+"Data" | " Engineering" | " is" | " amazing"
+```
+
+``` mermaid
+flowchart LR
+    A[Text] --> B[Tokenizer]
+    B --> C[Tokens]
+```
+
+------------------------------------------------------------------------
+
+# 16. Embeddings
+
+A neural network needs numerical representations rather than raw words.
+
+An **embedding** converts a token into a numerical vector.
+
+Example:
+
+``` text
+database → [0.21, -0.45, 0.81, ...]
+```
+
+The important idea is not any individual number. It is the
+**relationship between vectors**.
+
+For example:
+
+``` text
+database ───── close ───── table
+
+database ───────────── far ───────────── banana
+```
+
+Because "database" and "table" are semantically related, their learned
+vectors tend to be closer in the model's multidimensional space.
+
+### Conceptual pipeline
+
+``` mermaid
+flowchart LR
+    A[Token] --> B[Embedding Layer]
+    B --> C[Numerical Vector]
+    C --> D[Neural Network]
+```
+
+> **Interview definition:** An embedding is a numerical vector
+> representation that allows language information to be processed
+> mathematically and captures useful relationships between tokens.
+
+------------------------------------------------------------------------
+
+# 17. Prompt, System Prompt, Context, and User Prompt
+
+## Prompt
+
+The prompt is the input/instructions provided to the model.
+
+But an LLM application can conceptually combine multiple types of
+information.
+
+### System Prompt
+
+Defines model/application behaviour.
+
+Think:
+
+> Who are you? How should you behave? What rules should you follow?
+
+Usually written by the application developer.
+
+### Context
+
+Information supplied to help the model answer.
+
+Context can include:
+
+-   Previous conversation
+-   Retrieved documents from RAG
+-   Customer/account information
+-   Tool outputs
+-   Application-specific data
+
+Think:
+
+> What information does the model currently have available?
+
+### User Prompt
+
+What the user actually asks.
+
+Example:
+
+``` text
+"Why did my card payment fail?"
+```
+
+### Conceptual structure
+
+``` mermaid
+flowchart TD
+    A[System Prompt] --> D[Effective Model Input]
+    B[Context] --> D
+    C[User Prompt] --> D
+    D --> E[LLM]
+    E --> F[Response]
+```
+
+------------------------------------------------------------------------
+
+# 18. Temperature
+
+Temperature controls how strongly generation prefers high-probability
+token choices.
+
+Suppose:
+
+``` text
+Prompt:
+"Data engineering is..."
+```
+
+The model may estimate:
+
+``` text
+important   → 35%
+challenging → 25%
+interesting → 20%
+essential   → 12%
+fun         → 8%
+```
+
+### Low temperature
+
+Example:
+
+``` text
+temperature = 0.1
+```
+
+The model strongly prefers high-probability choices.
+
+Possible style:
+
+> Data engineering is an important part of building reliable data
+> platforms.
+
+### Higher temperature
+
+Example:
+
+``` text
+temperature = 0.9
+```
+
+Lower-probability alternatives get more opportunity to be selected.
+
+Possible style:
+
+> Data engineering is the invisible plumbing that keeps modern AI
+> systems alive.
+
+### Practical mental model
+
+``` mermaid
+flowchart LR
+    A[Lower Temperature] --> B[More Deterministic / Conservative]
+    C[Higher Temperature] --> D[More Varied / Creative]
+```
+
+> **Important:** Temperature affects token selection behaviour; it does
+> not add knowledge to the model.
+
+------------------------------------------------------------------------
+
+# 19. Context Window
+
+The **context** is everything the model can currently see while
+generating its response.
+
+The source gives GPT-5 as an example with a 400,000-token context window
+and up to 128,000 reasoning/output tokens, with the remaining capacity
+available for input/context under the described conceptual allocation.
+
+### Why context matters
+
+A model can only work with the information available within its context
+window.
+
+``` mermaid
+flowchart LR
+    A[System Instructions] --> D[Context Window]
+    B[User Prompt] --> D
+    C[Retrieved / Previous Information] --> D
+    D --> E[LLM]
+    E --> F[Output]
+```
+
+------------------------------------------------------------------------
+
+# 20. How an LLM Processes a Prompt
+
+Example:
+
+> "Explain Apache Spark in simple terms."
+
+## Step 1 --- Tokenization
+
+``` text
+Prompt
+  ↓
+Tokenizer
+  ↓
+Tokens / Token IDs
+```
+
+The input is broken into tokens.
+
+## Step 2 --- Embeddings
+
+``` text
+Tokens
+  ↓
+Embedding Layer
+  ↓
+Numerical Representations
+```
+
+Tokens become vectors.
+
+## Step 3 --- Transformer Layers
+
+The vectors pass through many Transformer blocks.
+
+``` mermaid
+flowchart TD
+    A[Token Embeddings] --> B[Transformer Block 1]
+    B --> C[Transformer Block 2]
+    C --> D[Transformer Block 3]
+    D --> E[...]
+    E --> F[Transformer Block N]
+```
+
+Inside these layers, **attention** helps the model understand
+relationships between tokens.
+
+Example:
+
+``` text
+"Spark distributes data across multiple machines."
+
+Spark
+  ↕
+distributes
+  ↕
+data
+  ↕
+machines
+```
+
+## Step 4 --- Next-token prediction
+
+For:
+
+``` text
+"Apache Spark is a"
+```
+
+The model may calculate:
+
+``` text
+distributed → 45%
+data        → 25%
+framework   → 20%
+database    → 2%
+```
+
+One token is selected.
+
+## Step 5 --- Repeat
+
+``` text
+Apache Spark is a
+        ↓
+Apache Spark is a distributed
+        ↓
+Apache Spark is a distributed processing
+        ↓
+Apache Spark is a distributed processing framework
+```
+
+This continues until the response is complete.
+
+------------------------------------------------------------------------
+
+# 21. Transformer Architecture
+
+The source describes modern GPT-style LLMs as using **decoder-only
+Transformer blocks**.
+
+Each block mainly contains:
+
+1.  **Masked Self-Attention**
+2.  **Feed Forward Network**
+
+``` mermaid
+flowchart TD
+    A[Input Token Representations] --> B[Masked Self-Attention]
+    B --> C[Feed Forward Network]
+    C --> D[Output Representations]
+    D --> E[Next Transformer Block]
+```
+
+## Masked Self-Attention
+
+Each token can look at earlier relevant tokens to understand context.
+
+Example:
+
+``` text
+"The Glue job failed due to schema mismatch."
+```
+
+The token **"mismatch"** can pay more attention to:
+
+-   Schema
+-   Failed
+-   Glue job
+
+This helps the model form the interpretation:
+
+> The failure is related to a schema mismatch.
+
+## Feed Forward Network
+
+After attention gathers contextual information, the feed-forward network
+further refines that representation.
+
+Conceptually:
+
+``` text
+Attention
+   ↓
+Contextual Understanding
+   ↓
+Feed Forward Network
+   ↓
+Refined Representation
+```
+
+------------------------------------------------------------------------
+
+# 22. End-to-End LLM Architecture
+
+A simplified view of the complete workflow:
+
+``` mermaid
+flowchart TD
+    A[User Input / Prompt]
+    A --> B[Tokenization]
+    B --> C[Token IDs]
+    C --> D[Embeddings + Position Information]
+    D --> E[Transformer Blocks]
+
+    E --> E1[Masked Self-Attention]
+    E1 --> E2[Feed Forward Network]
+    E2 --> E3[Repeated Transformer Blocks]
+
+    E3 --> F[Next-Token Probability Distribution]
+    F --> G[Select Next Token]
+    G --> H[Add Token to Context]
+    H --> F
+
+    F --> I[Completed Response]
+```
+
+### Key flow to remember
+
+``` text
+Prompt
+  ↓
+Tokenization
+  ↓
+Token IDs
+  ↓
+Embeddings + Position Information
+  ↓
+Transformer Blocks
+  ↓
+Attention + Feed Forward
+  ↓
+Next-token probabilities
+  ↓
+Select token
+  ↓
+Repeat
+  ↓
+Response
+```
+
+------------------------------------------------------------------------
+
+# 23. AI Fundamentals Hierarchy
+
+Use this mental model to connect the major concepts:
+
+``` mermaid
 flowchart TD
     AI[Artificial Intelligence]
     AI --> ML[Machine Learning]
-    AI --> Rules[Rule-Based Systems]
-    AI --> Search[Search Algorithms & Heuristics]
-    
     ML --> NN[Neural Networks]
     NN --> DL[Deep Learning]
-    DL --> Trans[Transformers]
-    Trans --> FM[Foundation Models]
-    FM --> GenAI[Generative AI]
-    GenAI --> LLM[Large Language Models]
+    DL --> NLP[NLP Applications]
+    DL --> LLM[LLMs]
+    LLM --> GenAI[Generative AI Applications]
+
+    NLP --> T[Transformers / LLMs]
+    GenAI --> RAG[RAG / Enterprise Search]
+    GenAI --> Copilot[AI Copilots]
+    GenAI --> Agents[AI Agents]
 ```
 
-### Methods for Building AI
-* **Rule-Based Systems:** Static `IF-THEN` conditional logic frameworks.
-* **Search & Heuristics:** Graph traverse/game-tree search algorithms.
-* **Machine Learning:** Pattern discovery using statistical models trained on data.
-* **Deep Learning:** Layered artificial neural networks learning multi-tier representations.
-* **Large Language Models (LLMs):** Massive Transformer models designed for language understanding and generation.
-* **AI Agents:** Autonomous systems that perceive environments, execute tools, and make sequential decisions.
+**Important:** This is a conceptual relationship, not a strict hierarchy
+in which every NLP system must use deep learning or every AI system must
+contain an LLM.
 
----
+------------------------------------------------------------------------
 
-## 4. Machine Learning: Learning Patterns from Data
+# 24. AI + Data Engineering: The Big Picture
 
-Machine Learning (ML) replaces explicit manual coding with statistical pattern learning.
+A Data Engineer can interact with AI at two different levels.
 
-```
-+-------------------------------------------------------------------------+
-|                        Traditional Programming                          |
-+-------------------------------------------------------------------------+
-|   Rules + Input Data  ===========================> Output               |
-+-------------------------------------------------------------------------+
+## Level 1 --- Use AI to improve Data Engineering
 
-+-------------------------------------------------------------------------+
-|                           Machine Learning                              |
-+-------------------------------------------------------------------------+
-|   Input Data + Labels (Correct Answers) ========> Learned Model (Rules) |
-+-------------------------------------------------------------------------+
-```
-
-### Traditional Programming vs Machine Learning: Spam Detection
-
-```mermaid
-flowchart TB
-    subgraph Rule-Based Spam Filter
-        A1[Incoming Email] --> B1{"IF subject contains 'WIN MONEY'<br/>AND sender unknown"}
-        B1 -- Yes --> C1[Mark as Spam]
-        B1 -- No --> D1[Inbox]
-    end
-
-    subgraph Machine Learning Spam Filter
-        A2[Historical Email Corpus] --> B2[Feature Extraction & Vectorization]
-        B2 --> C2[ML Algorithm Training]
-        C2 --> D2[Learned Statistical Model]
-        E2[New Email] --> D2
-        D2 --> F2[Prediction: 98.4% Spam Probability]
-    end
-```
-
----
-
-### Core ML Mathematical Intuition: Regression Example
-
-Consider predicting house prices based on operational attributes:
-
-| Size (`sqft`) | Bedrooms | Location Score | Price (`Y`) |
-| :--- | :--- | :--- | :--- |
-| `1000` | `2` | `7` | `₹50 Lakhs` |
-| `1500` | `3` | `8` | `₹75 Lakhs` |
-| `2000` | `4` | `9` | `₹1 Crore` |
-
-#### The Model Formula
-$$	ext{Price} = (w_1 	imes 	ext{Size}) + (w_2 	imes 	ext{Bedrooms}) + (w_3 	imes 	ext{Location}) + b$$
-
-* **Features ($X$):** Input features (`Size`, `Bedrooms`, `Location Score`).
-* **Target / Label ($Y$):** Objective target output value (`Price`).
-* **Weights ($w_1, w_2, w_3$):** Learnable parameters determining the importance of each feature.
-* **Bias ($b$):** Adjustable offset value.
-
-#### Iterative Training Optimization Loop
-
-```mermaid
+``` mermaid
 flowchart LR
-    A[Initialize Random Weights] --> B[Predict Output Y_hat]
-    B --> C[Calculate Prediction Error / Loss]
-    C --> D[Adjust Weights via Gradient Descent]
-    D --> B
+    A[Data Engineer] --> B[AI Assistant]
+    B --> C[SQL]
+    B --> D[PySpark]
+    B --> E[Debugging]
+    B --> F[Testing]
+    B --> G[Documentation]
+
+    C --> H[Engineer Validation]
+    D --> H
+    E --> H
+    F --> H
+    G --> H
+    H --> I[Production]
 ```
 
----
+## Level 2 --- Build the data foundation for AI
 
-### Machine Learning Paradigms
-
-```mermaid
-flowchart TD
-    ML[Machine Learning Types]
-    ML --> Supervised[Supervised Learning<br/>Labeled Data: X + Y]
-    ML --> Unsupervised[Unsupervised Learning<br/>Unlabeled Data: X Only]
-    ML --> RL[Reinforcement Learning<br/>Agent + Environment + Rewards]
-
-    Supervised --> Reg[Regression<br/>Predict Continuous Values<br/>e.g., Price, Sales, SLA]
-    Supervised --> Class[Classification<br/>Predict Categories<br/>e.g., Churn, Fraud, Spam]
-
-    Unsupervised --> Cluster[Clustering<br/>e.g., K-Means Customer Segments]
-    Unsupervised --> Anomaly[Anomaly Detection<br/>e.g., Pipeline Outlier Detection]
-
-    RL --> Agent[Reward Optimization<br/>e.g., Resource Allocation, Game AI]
-```
-
-#### Supervised vs Unsupervised vs Reinforcement Learning
-
-| Paradigm | Input Data | Target Label ($Y$) | Primary Use Cases | Algorithms |
-| :--- | :--- | :--- | :--- | :--- |
-| **Supervised Learning** | Features ($X$) | Yes (Explicit Targets) | Churn Prediction, Price Forecasting, Fraud Detection | Linear/Logistic Regression, Random Forest, XGBoost, SVM |
-| **Unsupervised Learning** | Features ($X$) | No | Customer Segmentation, Anomaly Detection, Rule Mining | K-Means, DBSCAN, Isolation Forest, PCA |
-| **Reinforcement Learning** | State ($S$) | Reward/Penalty Signal | Resource Scheduling, Autonomous Driving, Game AI | Q-Learning, PPO, Deep Q-Networks (DQN) |
-
----
-
-## 5. Artificial Neural Networks & Deep Learning
-
-Neural networks are computational models inspired by biological neural structures, designed to map complex, non-linear feature relationships.
-
-### Deep Learning Neuron Architecture
-
-```
-   Inputs (X)        Weights (W)
-   
-     x1 ---------------> (w1) \
-                               \
-     x2 ---------------> (w2) ---> [  SUMMATION (Σ)  ] ---> [ ACTIVATION f(z) ] ---> Output (y)
-                               /   [  z = Σ(xi*wi)+b ]      [ e.g., ReLU / Sigmoid ]
-     xn ---------------> (wn) /
-                                 
-                                        ^
-                                        |
-                                     Bias (b)
-```
-
-$$	ext{Output } y = f\left( \sum_{i=1}^{n} (x_i \cdot w_i) + b ight)$$
-
-* **Input Data:** Input feature vector fed to the input layer.
-* **Forward Pass:** Information flows layer-by-layer through weighted connections.
-* **Prediction:** Output layer produces final numerical value or class probability.
-* **Loss Evaluation:** Compares predicted output with actual target values.
-* **Backpropagation & Optimization:** Computes gradients to adjust weights and minimize error.
-
----
-
-### Deep Learning Evolution
-
-```mermaid
+``` mermaid
 flowchart LR
-    subgraph Simple Neural Network
-        A1[Input Layer] --> B1[Single Hidden Layer]
-        B1 --> C1[Output Layer]
-    end
-
-    subgraph Deep Learning Network
-        A2[Input Layer] --> B2[Hidden Layer 1<br/>Low Features: Edges/Pixels]
-        B2 --> C2[Hidden Layer 2<br/>Mid Features: Shapes/Text]
-        C2 --> D2[Hidden Layer N<br/>High Features: Complex Patterns]
-        D2 --> E2[Output Layer]
-    end
+    A[Documents / Data Sources] --> B[Ingestion]
+    B --> C[Cleaning]
+    C --> D[Chunking / Transformation]
+    D --> E[Embeddings]
+    E --> F[Vector Store]
+    F --> G[RAG / AI Application]
+    G --> H[User]
 ```
 
-#### Hierarchical Feature Extraction Example: Document Processing
+This is where traditional Data Engineering skills become important for
+AI systems:
 
-```
-[ Raw Invoice Pixels ] ──> [ Edge Detection ] ──> [ Character Recognition ] ──> [ Field Mapping ] ──> [ Total Amount: $4,250 ]
-```
+-   Data ingestion
+-   Transformation
+-   Data quality
+-   Pipeline orchestration
+-   Freshness
+-   Incremental processing
+-   Storage
+-   Governance
+-   Reliability
 
----
+------------------------------------------------------------------------
 
-## 6. Natural Language Processing (NLP)
+# 25. Data Engineer Interview Cheat Sheet
 
-Natural Language Processing focuses on processing, understanding, and generating human natural language.
+## AI
 
-### Evolutionary Progression of NLP
+**Q: What is AI?**
 
-```mermaid
-flowchart LR
-    A[Rule-Based NLP<br/>Regex, Parsing Trees] --> B[Statistical ML NLP<br/>TF-IDF, Naive Bayes]
-    B --> C[Deep Learning NLP<br/>RNNs, LSTMs, Word2Vec]
-    C --> D[Transformer Era<br/>Attention, BERT, GPT, LLMs]
-```
+AI is the broad field of building systems capable of performing tasks
+that normally require human intelligence, such as decision making,
+language understanding, image recognition, planning, problem solving,
+and content generation.
 
-> **Key Distinction:** NLP defines the **problem domain** (working with human language). Machine Learning, Deep Learning, and Transformers are **techniques** used to solve NLP problems.
+## ML
 
----
+**Q: What is Machine Learning?**
 
-## 7. Generative AI & Large Language Models (LLMs)
+ML teaches computers to learn patterns from data rather than relying
+entirely on explicitly programmed rules.
 
-Generative AI refers to models capable of generating new content (text, code, images, audio) based on learned probabilistic distributions.
+## Feature
 
-```
-+------------------------------------------------------------------------+
-|                          Traditional ML                                |
-+------------------------------------------------------------------------+
-|   Predicts a label or probability  ==> "Customer Churn Risk = 82%"     |
-+------------------------------------------------------------------------+
+**Q: What is a feature?**
 
-+------------------------------------------------------------------------+
-|                          Generative AI                                 |
-+------------------------------------------------------------------------+
-|   Generates new domain content     ==> PySpark ETL Script / Document Summary|
-+------------------------------------------------------------------------+
-```
+A feature is an input variable used by a machine-learning model, such as
+house size or number of bedrooms.
 
----
+## Label
 
-### Mechanics of Next-Token Prediction
+**Q: What is a label?**
 
-An LLM is fundamentally an autocompletive probability distribution model designed to predict the most statistically probable next token.
+A label is the known target/output used in supervised learning.
 
-```
-Prompt: "The capital of France is"
+## Model
 
-Model Vocabulary Probabilities:
-┌──────────────┬──────────────┐
-│ Token        │ Probability  │
-├──────────────┼──────────────┤
-│ " Paris"     │    96.2%     │
-│ " London"    │     1.1%     │
-│ " Berlin"    │     0.5%     │
-│ " dynamic"   │     0.1%     │
-└──────────────┴──────────────┘
-```
+**Q: What is a model?**
 
-```mermaid
-flowchart LR
-    A[Input Context] --> B[Tokenization]
-    B --> C[Embedding & Position Encoding]
-    C --> D[Transformer Layers / Self-Attention]
-    D --> E[Compute Vocabulary Logits]
-    E --> F[Token Selection Strategy]
-    F --> G[Append Token to Context]
-    G --> A
-```
+A model is a mathematical function that maps inputs to outputs based on
+patterns learned during training.
 
----
+## Supervised Learning
 
-### Proprietary vs. Open-Weight LLMs
+**Q: What is supervised learning?**
 
-```mermaid
-flowchart TD
-    LLM[LLM Landscape] --> Prop[Closed / Proprietary Models]
-    LLM --> Open[Open-Weight Models]
+It learns from examples containing inputs and known correct answers.
+Regression and classification are two major supervised-learning problem
+types.
 
-    Prop --> PropEx[GPT-4o, Claude 3.5, Gemini 1.5 Pro]
-    Prop --> PropAccess[API Key Access Only<br/>Vendor Hosts Infrastructure & Weights]
+## Unsupervised Learning
 
-    Open --> OpenEx[Llama 3, DeepSeek-V3, Qwen 2.5, Mistral]
-    Open --> OpenAccess[Downloadable Model Weights<br/>Self-Hostable on Private Cloud/GPUs]
-```
+**Q: What is unsupervised learning?**
 
----
+It finds patterns or structure in data without predefined labels, such
+as through clustering or anomaly detection.
 
-## 8. Fundamental Core LLM Concepts
+## Reinforcement Learning
 
-### 1. Tokens & Tokenization
-LLMs process text in atomic units called **tokens**. 
+**Q: What is reinforcement learning?**
 
-$$	ext{Rule of Thumb: } 1 	ext{ Token} pprox 4 	ext{ English Characters} pprox 0.75 	ext{ Words}$$
+An agent learns by taking actions, observing outcomes, and receiving
+rewards or penalties, with the goal of maximizing future reward.
 
-```
-Raw Text:    "Data Engineering is amazing"
-Tokenized:   ["Data", " Engineering", " is", " amazing"]
-Token IDs:   [12431, 14210, 318, 7150]
-```
+## Neural Network
 
----
+**Q: What is a neural network?**
 
-### 2. Embeddings
-An embedding converts a discrete token integer into a high-dimensional continuous vector space capturing semantic relationships.
+A neural network is a machine-learning model made of connected neurons
+arranged in layers, using weights, biases, and activation functions to
+learn patterns.
 
-```
-"database"  ──> [  0.21, -0.45,  0.81,  0.12, ... ]
-"table"     ──> [  0.18, -0.39,  0.76,  0.09, ... ]
-"banana"    ──> [ -0.72,  0.15, -0.31, -0.88, ... ]
-```
+## Deep Learning
 
-```
-Vector Distance Relationship:
+**Q: What is Deep Learning?**
 
-  [ database ] ◄──────── Closely Aligned (Cosine Similarity ~0.91) ────────► [ table ]
-      │
-      │
-  Far Distance (Cosine Similarity ~0.12)
-      │
-      ▼
-  [ banana ]
-```
+Deep Learning uses neural networks with multiple layers to learn
+increasingly complex representations.
 
----
+## NLP
 
-### 3. Prompt Engineering Components
+**Q: What is NLP?**
 
-```mermaid
-flowchart TD
-    subgraph Structured LLM Request
-        A[System Prompt<br/>Role, Rules, Behavioral Guardrails]
-        B[Context Block<br/>Retrieved Docs, History, DB Schemas]
-        C[User Prompt<br/>Active Task / Question]
-    end
+NLP is the AI field focused on processing, understanding, and generating
+human language.
 
-    A --> D[Composite Prompt Construction]
-    B --> D
-    C --> D
-    D --> E[LLM Generation Engine]
-    E --> F[Output Response]
-```
+## Generative AI
 
-#### Code Implementation Setup
+**Q: What is Generative AI?**
 
-```python
-# Conceptual Structure for API Calls
-payload = {
-    "model": "gpt-4o",
-    "messages": [
-        {
-            "role": "system",
-            "content": "You are a senior Data Platform Engineer. Respond strictly with executable PySpark code without explanations."
-        },
-        {
-            "role": "system_context",
-            "content": "Target Schema: orders(order_id STRING, customer_id STRING, amount DOUBLE, event_time TIMESTAMP)"
-        },
-        {
-            "role": "user",
-            "content": "Write a PySpark streaming query reading from Kafka topic 'orders' writing to Delta Lake."
-        }
-    ],
-    "temperature": 0.1,
-    "max_tokens": 1000,
-    "top_p": 0.9
-}
-```
+Generative AI creates new content such as text, code, images, audio, or
+video based on patterns learned from data.
 
----
+## LLM
 
-### 4. Sampling Hyperparameters
+**Q: What is an LLM?**
 
-* **Temperature:** Controls output randomness.
-  * `Temperature = 0.0 – 0.2`: Deterministic, precise, highly consistent. Best for SQL generation, code synthesis, and structured data extraction.
-  * `Temperature = 0.7 – 1.0`: Creative, varied, diverse. Best for brainstorming and story generation.
-* **Top-P (Nucleus Sampling):** Selects tokens from a cumulative probability threshold pool (e.g., top 90% probability mass).
+An LLM is a deep-learning model based on Transformer architecture,
+trained on massive text/code datasets to learn language patterns and
+predict the next token.
 
----
+## Token
 
-### 5. Context Window Architecture
+**Q: What is a token?**
 
-The context window limits the total token capacity (Input + Output) an LLM can evaluate in a single generation pass.
+A token is a small unit of text processed by an LLM. It can represent a
+complete word, part of a word, punctuation, or other text units.
 
-```
-+--------------------------------------------------------------------+
-|                      Total Context Window                          |
-|                       (e.g., 128,000 Tokens)                       |
-+-------------------------------------------------+------------------+
-|               Input Context Area                | Generated Output |
-| (System Prompt + History + RAG Retrieved Context)|  (Max Tokens)    |
-+-------------------------------------------------+------------------+
+## Embedding
+
+**Q: What is an embedding?**
+
+An embedding is a numerical vector representation of a token or piece of
+information that allows a model to process semantic relationships
+mathematically.
+
+## Prompt
+
+**Q: What is a prompt?**
+
+A prompt is the input/instruction provided to an LLM.
+
+## Context
+
+**Q: What is context?**
+
+Context is the information currently available to the model while
+generating its response, such as previous conversation, retrieved
+documents, user data, or tool outputs.
+
+## Temperature
+
+**Q: What does temperature control?**
+
+Temperature influences how strongly generation prefers high-probability
+token choices. Lower values generally produce more conservative and
+consistent choices, while higher values allow more variation.
+
+## Context Window
+
+**Q: What is a context window?**
+
+It is the amount of information the model can currently see while
+processing and generating a response.
+
+## Transformer
+
+**Q: What happens inside a Transformer block?**
+
+The source emphasizes two major components: masked self-attention, which
+helps tokens use relevant earlier context, and a feed-forward network,
+which further refines the representation.
+
+------------------------------------------------------------------------
+
+# 26. Most Important Distinctions
+
+### AI vs ML
+
+``` text
+AI = Broad field
+ML = One approach used to build AI systems
 ```
 
----
+### ML vs Deep Learning
 
-## 9. Comprehensive End-to-End LLM Generation Architecture
-
-```mermaid
-flowchart TD
-    A[User Input Text<br/>'Explain Apache Spark'] --> B[Tokenizer]
-    B -->|Token IDs: 1031, 318, 2577| C[Embedding + Positional Encoding Layer]
-    C -->|Vector Representations| D[Stacked Transformer Blocks]
-    
-    subgraph Transformer Block Stack
-        D1[Masked Multi-Head Self-Attention] --> D2[Layer Normalization]
-        D2 --> D3[Feed-Forward Neural Network]
-        D3 --> D4[Residual Connections & Layer Norm]
-    end
-
-    D --> E[Un-Embedding / Logits Layer]
-    E -->|Raw Vocabulary Scores| F[Sampling & Temperature Filter]
-    F -->|Select Token: 'Apache'| G[Output Generation]
-    G -->|Append 'Apache' to Prompt| A
+``` text
+ML = Broad machine-learning techniques
+Deep Learning = Neural-network-based ML with multiple layers
 ```
 
----
+### NLP vs Deep Learning
 
-## 10. Deep-Dive: Transformer Internal Block Architecture
-
-Inside each Transformer layer, two key sub-layers determine context processing:
-
-```mermaid
-flowchart LR
-    subgraph Transformer Layer Internal
-        A[Input Vectors] --> B[Masked Self-Attention]
-        B --> C[Refine Token Context]
-        C --> D[Feed-Forward Network]
-        D --> E[Output Representations]
-    end
+``` text
+NLP = Language problem domain
+Deep Learning = Technique that can solve NLP problems
 ```
 
-1. **Masked Self-Attention:** Enables tokens to dynamically adjust weights based on surrounding tokens.
-   * *Example:* In the sentence `"Glue job failed due to schema mismatch"`, attention mechanisms link the word **"mismatch"** directly to **"schema"** and **"failed"**, establishing that the failure cause is a structural data mismatch rather than an out-of-memory error.
-2. **Feed-Forward Network (FFN):** Processes the self-attention contextual embeddings to project representations into higher-level abstraction spaces, preparing the network to predict the final output token.
+### Traditional ML vs Generative AI
 
----
+``` text
+Traditional ML → commonly predicts
+Generative AI   → generates new content
+```
 
-## Summary Checklist for Data Engineers
+### Supervised vs Unsupervised
 
-| Domain | Key Data Engineering Takeaway |
-| :--- | :--- |
-| **AI Workflows** | Leverage AI for boilerplate SQL/PySpark code, but manually review partition, memory, and idempotency logic. |
-| **Production AI** | Data engineers own the pipeline backbone for RAG, vector database syncs, and unstructured data ingestion. |
-| **Machine Learning** | Understand feature matrix ($X$) vs target labels ($Y$) to properly build ETL features for ML store platforms. |
-| **LLM Mechanics** | LLMs operate via next-token prediction over dynamic context windows using embeddings and multi-head attention. |
-| **Parameters** | Use lower temperature values (`0.0 - 0.2`) for deterministic code generation and structural pipeline tasks. |
+``` text
+Supervised   → labeled answers available
+Unsupervised → no predefined answers
+```
+
+### Embedding vs Token
+
+``` text
+Token      → unit of text
+Embedding  → numerical vector representation
+```
+
+### Prompt vs Context
+
+``` text
+Prompt  → instructions/input
+Context → information available to help answer
+```
+
+### Closed vs Open-weight model
+
+``` text
+Closed / Proprietary
+→ provider keeps weights private
+→ typically accessed through API
+
+Open-weight
+→ weights can typically be downloaded
+→ can potentially be run, fine-tuned, and deployed on your infrastructure
+```
+
+------------------------------------------------------------------------
+
+# 27. 30-Second Mental Model
+
+When explaining AI fundamentals in an interview:
+
+``` text
+AI
+↓
+Machine Learning
+↓
+Neural Networks
+↓
+Deep Learning
+↓
+Transformers
+↓
+LLMs
+↓
+Generative AI Applications
+↓
+RAG / AI Copilots / AI Systems
+```
+
+Then connect it back to Data Engineering:
+
+``` text
+Reliable Data
+↓
+Ingestion
+↓
+Transformation
+↓
+Quality + Governance
+↓
+Embeddings / Vector Storage
+↓
+RAG / AI Application
+↓
+Useful AI Response
+```
+
+> **Final takeaway:** For a Data Engineer, the goal is not to become an
+> ML researcher from these fundamentals. The important foundation is
+> understanding how AI/ML/LLMs work at a conceptual level and, most
+> importantly, how reliable data pipelines enable production AI systems.
