@@ -339,3 +339,158 @@ def rotate(self, matrix: List[List[int]]) -> None:
     for r in range(len(matrix)):
         # reverse each row
         self.reverse(matrix, r)
+
+# ===============================================================
+# program 10: 53. Maximum Subarray
+# URL: https://leetcode.com/problems/maximum-subarray/description/
+# ===============================================================
+def maxSubArray(self, nums: List[int]) -> int:
+    curr_sum = 0
+    max_sum = float("-inf")
+
+    for ele in nums:
+        if curr_sum < 0:
+            curr_sum = ele
+        else:
+            curr_sum += ele
+        
+        max_sum = max(max_sum, curr_sum)
+
+    return max_sum
+
+# ===============================================================
+# program 11: 54. Spiral Matrix
+# URL: https://leetcode.com/problems/spiral-matrix/description/
+# ===============================================================
+def spiralOrder(self, matrix: List[List[int]]) -> List[int]:
+    top_row, bottom_row  = 0, len(matrix) - 1
+    left_col, right_col  = 0, len(matrix[0]) - 1
+    rows, cols = len(matrix), len(matrix[0])
+    total_ele = rows * cols
+    csf = 0 # count so far
+    spiral = []
+    
+    while(csf < total_ele):
+        # top border
+        if csf < total_ele:
+            for col in range(left_col, right_col + 1):
+                spiral.append(matrix[top_row][col])
+                csf += 1
+            top_row += 1
+
+        # right border
+        if csf < total_ele:
+            for row in range(top_row, bottom_row + 1):
+                spiral.append(matrix[row][right_col])
+                csf += 1
+            right_col -= 1
+
+        # bottom border
+        if csf < total_ele:
+            for col in range(right_col, left_col - 1, -1):
+                spiral.append(matrix[bottom_row][col])
+                csf += 1
+            bottom_row -= 1
+
+        # left border
+        if csf < total_ele:
+            for row in range(bottom_row, top_row - 1, -1):
+                spiral.append(matrix[row][left_col])
+                csf += 1
+            left_col += 1
+
+    return spiral
+
+# ===============================================================
+# program 12: 55. Jump Game
+# URL: https://leetcode.com/problems/jump-game/description/
+# ===============================================================
+def canJump(self, nums: List[int]) -> bool:
+    ov_gas = 0
+
+    for gas in nums:
+        if ov_gas < 0:
+            return False
+            
+        elif gas > ov_gas:
+            ov_gas = gas
+        
+        ov_gas -= 1
+    
+    return True
+
+# ===============================================================
+# program 13: 56. Merge Intervals
+# URL: https://leetcode.com/problems/merge-intervals/
+# ===============================================================
+def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+    intervals.sort(key=lambda x:x[0])
+
+    lsp = intervals[0][0] # left starting point
+    lep = intervals[0][1] # right starting point
+    curr_idx = 1
+    ans = []
+
+    while curr_idx < len(intervals):
+        sp = intervals[curr_idx][0] # current starting point
+        ep = intervals[curr_idx][1] # current starting point
+
+        if sp > lep:
+            # non overlapping interval -> Add into ans
+            smallAns = [lsp, lep]
+            ans.append(smallAns)
+
+            lsp = sp
+            lep = ep
+        elif ep > lep:
+            # partially overlapped
+            lep = ep
+        
+        curr_idx += 1
+
+    smallAns = [lsp, lep]
+    ans.append(smallAns)
+    return ans
+
+
+# ===============================================================
+# program 14: 57. Insert Interval
+# URL: https://leetcode.com/problems/insert-interval/description/
+# ===============================================================
+def insert(self, intervals: List[List[int]], newInterval: List[int]) -> List[List[int]]:
+    curr_idx = 0
+    ans = []
+
+    # step1 => add interval in ans as it is if starting time of interval is less than starting time of new interval
+    while curr_idx < len(intervals):
+        start = intervals[curr_idx][0]; # starting 
+        end = intervals[curr_idx][1]; # ending  
+        if newInterval[0] > start:
+            ans.append(intervals[curr_idx]) # add interval as it is
+        else:
+            break # means we have to merge further
+        
+        curr_idx += 1
+
+    # step2 => there will be two cases => i) size of ans = 0, ii) size of ans > 0
+    if len(ans) == 0:
+        ans.append(newInterval) # add newInterval as it is
+    else:
+        # newInterval may be marging with intervals
+        if ans[len(ans) - 1][1] >= newInterval[0]:
+            ans[len(ans) - 1][1] = max(ans[len(ans) - 1][1], newInterval[1])
+        else:
+            ans.append(newInterval)
+
+    # step3 => further prosess for remaining idx
+    while curr_idx < len(intervals):
+        if ans[len(ans) - 1][1] >= intervals[curr_idx][0]:
+            # marging
+            ans[len(ans) - 1][1] = max(ans[len(ans) - 1][1], intervals[curr_idx][1])
+        else:
+            # add as it is
+            ans.append(intervals[curr_idx])
+        
+        curr_idx += 1
+    
+    return ans
