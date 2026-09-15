@@ -494,3 +494,44 @@ def insert(self, intervals: List[List[int]], newInterval: List[int]) -> List[Lis
         curr_idx += 1
     
     return ans
+
+# ===============================================================
+# program 15: 59. Spiral Matrix II
+# URL: https://leetcode.com/problems/spiral-matrix-ii/description/
+# ===============================================================
+def generateMatrix(self, n: int) -> List[List[int]]:
+    ans = [[0 for _ in range(n)] for _ in range(n)]
+    cnt = 1
+    total_ele = n * n
+    top_row, bottom_row = 0, n - 1
+    left_col, right_col = 0, n - 1
+
+    while cnt <= total_ele:
+        # top border
+        if cnt <= total_ele:
+            for col in range(left_col, right_col + 1):
+                ans[top_row][col] = cnt
+                cnt += 1
+            top_row += 1
+
+        # right border
+        if cnt <= total_ele:
+            for row in range(top_row, bottom_row + 1):
+                ans[row][right_col] = cnt
+                cnt += 1
+            right_col -= 1
+
+        # bottom border
+        if cnt <= total_ele:
+            for col in range(right_col, left_col - 1, -1):
+                ans[bottom_row][col] = cnt
+                cnt += 1
+            bottom_row -= 1
+
+        # left border
+        if cnt <= total_ele:
+            for row in range(bottom_row, top_row - 1, -1):
+                ans[row][left_col] = cnt
+                cnt += 1
+            left_col += 1
+    return ans
