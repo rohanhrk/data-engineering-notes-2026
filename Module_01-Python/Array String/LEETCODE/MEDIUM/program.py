@@ -535,3 +535,77 @@ def generateMatrix(self, n: int) -> List[List[int]]:
                 cnt += 1
             left_col += 1
     return ans
+
+# ===============================================================
+# program 16: 73. Set Matrix Zeroes
+# URL: https://leetcode.com/problems/set-matrix-zeroes/description/
+# ===============================================================
+def makeRowZero(self, matrix, row):
+    for col in range(len(matrix[0])):
+        matrix[row][col] = 0 
+    
+def makeColZero(self, matrix, col):
+    for row in range(len(matrix)):
+        matrix[row][col] = 0 
+
+def setZeroes(self, matrix: list[list[int]]) -> None:
+    """
+    Do not return anything, modify matrix in-place instead.
+    """
+    zero_location_list = []
+    for row in range(len(matrix)):
+        for col in range(len(matrix[0])):
+            if matrix[row][col] == 0:
+                curr_zero_loc_list = [row, col]
+                zero_location_list.append(curr_zero_loc_list)
+    
+    for list in zero_location_list:
+        self.makeRowZero(matrix, list[0])
+        self.makeColZero(matrix, list[1])
+        
+# ===============================================================
+# program 17: 74. Search a 2D Matrix
+# URL: https://leetcode.com/problems/search-a-2d-matrix
+# ===============================================================
+def getRowIndex(self, matrix, target):
+    idx = -1
+    lo = 0
+    hi = len(matrix) - 1
+
+    while lo <= hi:
+        mid_row = lo + int((hi - lo) / 2)
+        
+        if matrix[mid_row][0] <= target and target <= matrix[mid_row][len(matrix[0]) - 1]:
+            idx = mid_row
+            break
+        elif matrix[mid_row][len(matrix[0]) - 1] > target:
+            hi = mid_row - 1
+        else:
+            lo = mid_row + 1
+
+    return idx
+
+def getColIdx(self, matrix, target, row):
+    idx = -1
+    lo = 0
+    hi = len(matrix[0]) - 1
+
+    while lo <= hi:
+        mid_col = lo + int((hi - lo) / 2)
+
+        if matrix[row][mid_col] == target:
+            idx = mid_col
+            break
+        elif matrix[row][mid_col] > target:
+            hi = mid_col - 1
+        else:
+            lo = mid_col + 1
+    return idx
+
+def searchMatrix(self, matrix: list[list[int]], target: int) -> bool:
+    rowIdx = self.getRowIndex(matrix, target)
+    if rowIdx == -1:
+        return False
+    
+    colIdx = self.getColIdx(matrix, target, rowIdx)
+    return colIdx != -1

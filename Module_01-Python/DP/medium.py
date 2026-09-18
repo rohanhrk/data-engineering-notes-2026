@@ -57,3 +57,32 @@ def uniquePathsWithObstacles(self, obstacleGrid: List[List[int]]) -> int:
 
 
     return self.uniquePathsWithObstacles_memo(obstacleGrid, 0, 0, n - 1, m - 1, dirs, dp)
+
+# ===============================================================
+# Program 3: 64. Minimum Path Sum
+# URL: https://leetcode.com/problems/minimum-path-sum/description/
+# ===============================================================
+def minPathSum_memo(self, grid, sr, sc, dr, dc, dirs, dp):
+    if sr == dr and sc == dc:
+        dp[sr][sc] = grid[sr][sc]
+        return dp[sr][sc]
+
+    if dp[sr][sc] != 0:
+        return dp[sr][sc]
+    
+    min_path_sum = int(1e8)
+    for dir in dirs:
+        nr = sr + dir[0]
+        nc = sc + dir[1]
+
+        if nr >= 0 and nr <= dr and nc >= 0 and nc <= dc:
+            min_path_sum = min(self.minPathSum_memo(grid, nr, nc, dr, dc, dirs, dp), min_path_sum)
+
+    dp[sr][sc] = min_path_sum + grid[sr][sc]
+    return dp[sr][sc]
+
+def minPathSum(self, grid: list[list[int]]) -> int:
+    dirs = [[0, 1],[1, 0]]
+    dp = [[0 for col in range(len(grid[0]))] for row in range(len(grid))]
+
+    return self.minPathSum_memo(grid, 0, 0, len(grid) - 1, len(grid[0]) - 1, dirs, dp)
