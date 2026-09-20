@@ -609,3 +609,31 @@ def searchMatrix(self, matrix: list[list[int]], target: int) -> bool:
     
     colIdx = self.getColIdx(matrix, target, rowIdx)
     return colIdx != -1
+
+# ===============================================================
+# program 18: 75. Sort Colors
+# URL: https://leetcode.com/problems/sort-colors/description/
+# ===============================================================
+def swap(self, nums, left, right):
+    nums[left], nums[right] = nums[right], nums[left]
+
+def sortColors(self, nums: list[int]) -> None:
+    """
+    Do not return anything, modify nums in-place instead.
+    """
+    one = -1 # always pointing to ending of 1
+    zero = -1 # always pointing to ending of 0
+    two = len(nums) # # always pointing to starting of 
+    curr = 0
+    while curr < two:
+        if nums[curr] == 2:
+            two -= 1
+            self.swap(nums, curr, two)
+        elif nums[curr] == 0:
+            zero += 1
+            self.swap(nums, curr, zero)
+            one += 1
+            curr += 1
+        else:
+            one += 1
+            curr += 1
