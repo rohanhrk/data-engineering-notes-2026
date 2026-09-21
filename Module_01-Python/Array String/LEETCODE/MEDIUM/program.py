@@ -637,3 +637,23 @@ def sortColors(self, nums: list[int]) -> None:
         else:
             one += 1
             curr += 1
+            
+# ===============================================================
+# program 19: 78. Subsets
+# URL: https://leetcode.com/problems/subsets/description/
+# ===============================================================
+def subsets(self, nums: list[int]) -> list[list[int]]:
+    ans = []
+
+    for num in nums:
+        if len(ans) == 0:
+            ans.append([])
+            ans.append([num])
+            continue
+        subset = [list for list in ans]
+        for list in subset:
+            base = [ele for ele in list] # [], [1]
+            base.append(num)
+            ans.append(base)
+
+    return ans
