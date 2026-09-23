@@ -104,3 +104,54 @@ def permuteUnique(self, nums: List[int]) -> List[List[int]]:
     self.permuteUnique_rec(nums, smallAns, ans, visited_so_far_idx)
 
     return ans
+
+
+# ============================================================================
+# program 5 : 17. Letter Combinations of a Phone Number
+# url : https://leetcode.com/problems/letter-combinations-of-a-phone-number/description/
+# ============================================================================
+keys = ["0", "1", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"] # digits to letters mapping like 2 -> abc
+def letterCombinations_rec(self, digits, length):
+    if length == 0:
+        return [""]
+
+    currChar = digits[length - 1]
+    digit = ord(currChar) - ord('0') # '2' - '0' = 2
+    letters = self.keys[digit]
+    
+    recRes = self.letterCombinations_rec(digits, length - 1)
+    myRes = []
+    for letter in letters:
+        for str in recRes:
+            str += letter
+            myRes.append(str)
+    
+    return myRes
+def letterCombinations(self, digits: str) -> list[str]:
+    return self.letterCombinations_rec(digits, len(digits))
+
+# ============================================================================
+# program 6 : 38. Count and Say
+# url : https://leetcode.com/problems/count-and-say/description/
+# ============================================================================
+def countAndSay(self, n: int) -> str:
+    if n == 1:
+        return "1"
+
+    recRes = self.countAndSay(n - 1)
+    myRes = ""
+    
+    ch = recRes[0]
+    count = 1
+    for i in range(1,len(recRes)):
+        if ch != recRes[i]:
+            myRes += str(count) + ch
+            ch = recRes[i]
+            count = 1
+            continue
+        
+        count += 1
+    
+    myRes += str(count) + ch
+
+    return myRes
