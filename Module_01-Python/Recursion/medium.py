@@ -157,25 +157,19 @@ def countAndSay(self, n: int) -> str:
     return myRes
 
 # ============================================================================
-# program 7 : 17. Letter Combinations of a Phone Number
-# url : https://leetcode.com/problems/letter-combinations-of-a-phone-number/
+# program 7 : 38. Count and Say
+# url : https://leetcode.com/problems/generate-parentheses/
 # ============================================================================
-keys = ["0", "1", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"] # digits to letters mapping like 2 -> abc
-def letterCombinations_rec(self, digits, length):
-    if length == 0:
-        return [""]
+def generateParenthesis_rec(self, open, close, max, smallAns, ans):
+    if len(smallAns) == 2 * max:
+        ans.append(smallAns)
+        return
 
-    currChar = digits[length - 1]
-    digit = ord(currChar) - ord('0') # '2' - '0' = 2
-    letters = self.keys[digit]
-    
-    recRes = self.letterCombinations_rec(digits, length - 1)
-    myRes = []
-    for letter in letters:
-        for str in recRes:
-            str += letter
-            myRes.append(str)
-    
-    return myRes
-def letterCombinations(self, digits: str) -> list[str]:
-    return self.letterCombinations_rec(digits, len(digits))
+    if open < max:
+        self.generateParenthesis_rec(open + 1, close, max, smallAns + '(', ans)
+    if close < open:
+        self.generateParenthesis_rec(open, close + 1, max, smallAns + ')', ans)
+def generateParenthesis(self, n: int) -> list[str]:
+    ans = []
+    self.generateParenthesis_rec(0, 0, n, "", ans)
+    return ans

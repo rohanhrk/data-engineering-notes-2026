@@ -86,3 +86,42 @@ def minPathSum(self, grid: list[list[int]]) -> int:
     dp = [[0 for col in range(len(grid[0]))] for row in range(len(grid))]
 
     return self.minPathSum_memo(grid, 0, 0, len(grid) - 1, len(grid[0]) - 1, dirs, dp)
+
+# ===============================================================
+# Program 4: 72. Edit Distance
+# URL: https://leetcode.com/problems/edit-distance/
+# ===============================================================
+def minDistance_memo(self, word1, len1, word2, len2, dp):
+    if len1 == 0 or len2 == 0:
+        if len1 == 0 and len2 == 0:
+            dp[len1][len2] = 0
+            return dp[len1][len2]
+        elif len1 == 0:
+            dp[len1][len2] = len2
+            return dp[len1][len2]
+        else:
+            dp[len1][len2] = len1
+            return dp[len1][len2]
+
+    if dp[len1][len2] != -1:
+        return dp[len1][len2]
+        
+    min_dist = float("inf")
+    if word1[len1 - 1] == word2[len2 - 1]:
+        min_dist = self.minDistance_memo(word1, len1 - 1, word2, len2 - 1, dp)
+        dp[len1][len2] = min_dist
+        return dp[len1][len2]
+    
+    inset = self.minDistance_memo(word1, len1, word2, len2 - 1, dp)
+    delete = self.minDistance_memo(word1, len1 - 1, word2, len2, dp)
+    replace = self.minDistance_memo(word1, len1 - 1, word2, len2 - 1, dp)
+
+    min_dist = min(inset, delete, replace) + 1
+    dp[len1][len2] = min_dist
+    return dp[len1][len2]
+def minDistance(self, word1: str, word2: str) -> int:
+    len1 = len(word1)
+    len2 = len(word2)
+
+    dp = [[-1 for _ in range(len2 + 1)] for _ in range(len1 + 1)]
+    return self.minDistance_memo(word1, len(word1), word2, len(word2), dp)

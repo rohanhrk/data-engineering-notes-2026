@@ -1,3 +1,4 @@
+from array import List
 # ============================================================================
 # program 1 : 6. Zigzag Conversion
 # url : https://leetcode.com/problems/zigzag-conversion/description/
@@ -66,32 +67,30 @@ def longestPalindrome(self, s: str) -> str:
     return long_pal_str
 
 # ===============================================================
-# program 3: 6. Zigzag Conversion
-# URL: https://leetcode.com/problems/zigzag-conversion/
+# program 3: 49. Group Anagrams
+# URL: https://leetcode.com/problems/group-anagrams/
 # ===============================================================
-def convert(self, s: str, numRows: int) -> str:
-    row = 0
-    stored_res = [""]*numRows
-    idx = 0
+def getCommonString(self, string):
+    freq = [0] * 26
+    commonStr = ""
 
-    while idx < len(s):
-        if row % 2 == 0:
-            col = 0
-            while col < numRows and idx < len(s):
-                stored_res[col] += s[idx]
-                col += 1
-                idx += 1     
-        elif row % 2 != 0:
-            col = numRows - 2
-            while col > 0 and idx < len(s):
-                stored_res[col] += s[idx]
-                col -= 1
-                idx += 1
-        
-        row += 1
-    
-    res = ""
-    for str in stored_res:
-        res += str
-    
-    return res
+    for ch in string:
+        freq[ord(ch) - ord('a')] += 1
+
+    for i in range(len(freq)):
+        if freq[i] != 0:
+            commonStr += chr(i + ord('a'))
+            commonStr += str(freq[i])
+    return commonStr
+def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
+    map = {}
+    ans = []
+    for str in strs:
+        commonStr = self.getCommonString(str)
+        map.setdefault(commonStr, [])
+        map.get(commonStr).append(str)
+
+    for list in map.values():
+        ans.append(list)
+
+    return ans
