@@ -65,3 +65,33 @@ def longestPalindrome(self, s: str) -> str:
     
     return long_pal_str
 
+# ===============================================================
+# program 3: 6. Zigzag Conversion
+# URL: https://leetcode.com/problems/zigzag-conversion/
+# ===============================================================
+def convert(self, s: str, numRows: int) -> str:
+    row = 0
+    stored_res = [""]*numRows
+    idx = 0
+
+    while idx < len(s):
+        if row % 2 == 0:
+            col = 0
+            while col < numRows and idx < len(s):
+                stored_res[col] += s[idx]
+                col += 1
+                idx += 1     
+        elif row % 2 != 0:
+            col = numRows - 2
+            while col > 0 and idx < len(s):
+                stored_res[col] += s[idx]
+                col -= 1
+                idx += 1
+        
+        row += 1
+    
+    res = ""
+    for str in stored_res:
+        res += str
+    
+    return res

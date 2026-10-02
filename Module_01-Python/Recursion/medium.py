@@ -155,3 +155,27 @@ def countAndSay(self, n: int) -> str:
     myRes += str(count) + ch
 
     return myRes
+
+# ============================================================================
+# program 7 : 17. Letter Combinations of a Phone Number
+# url : https://leetcode.com/problems/letter-combinations-of-a-phone-number/
+# ============================================================================
+keys = ["0", "1", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"] # digits to letters mapping like 2 -> abc
+def letterCombinations_rec(self, digits, length):
+    if length == 0:
+        return [""]
+
+    currChar = digits[length - 1]
+    digit = ord(currChar) - ord('0') # '2' - '0' = 2
+    letters = self.keys[digit]
+    
+    recRes = self.letterCombinations_rec(digits, length - 1)
+    myRes = []
+    for letter in letters:
+        for str in recRes:
+            str += letter
+            myRes.append(str)
+    
+    return myRes
+def letterCombinations(self, digits: str) -> list[str]:
+    return self.letterCombinations_rec(digits, len(digits))
