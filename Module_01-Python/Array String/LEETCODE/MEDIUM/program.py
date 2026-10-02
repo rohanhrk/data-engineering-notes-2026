@@ -657,4 +657,32 @@ def subsets(self, nums: list[int]) -> list[list[int]]:
             ans.append(base)
 
     return ans
+# ===============================================================
+# program 20: 1658. Minimum Operations to Reduce X to Zero
+# URL: https://leetcode.com/problems/minimum-operations-to-reduce-x-to-zero/
+# ===============================================================
+def minOperations(self, nums: list[int], x: int) -> int:
+    total_sum = sum(nums)
+    target_sum = total_sum - x
+    if target_sum == 0:
+        return len(nums)
 
+    st = 0
+    end = 0
+    maxSubArrayLen = float("-inf")
+    curr_sum = 0
+
+    while(end < len(nums)):
+        curr_sum += nums[end]
+
+        while st < end and curr_sum > target_sum:
+            curr_sum -= nums[st]
+            st += 1
+        
+        if curr_sum == target_sum:
+            maxSubArrayLen = max(maxSubArrayLen, end - st + 1)
+
+        end += 1
+    
+    
+    return -1 if maxSubArrayLen == float("-inf") else len(nums) - maxSubArrayLen
