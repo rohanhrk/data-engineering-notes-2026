@@ -686,3 +686,70 @@ def minOperations(self, nums: list[int], x: int) -> int:
     
     
     return -1 if maxSubArrayLen == float("-inf") else len(nums) - maxSubArrayLen
+
+# ===============================================================
+# program 21: 80. Remove Duplicates from Sorted Array II
+# URL: https://leetcode.com/problems/remove-duplicates-from-sorted-array-ii/
+# ===============================================================
+def swap(self, nums, st, end):
+    nums[st], nums[end] = nums[end], nums[st]
+
+def removeDuplicates(self, nums: list[int]) -> int:
+    pointer = 0 # pointing to ending of subarray whose each element appears at most twice
+    curr_idx = 1
+    k = 1
+    val = nums[0]
+    count = 1
+    while curr_idx < len(nums):
+        if nums[curr_idx] == val:
+            count += 1
+        else:
+            val = nums[curr_idx]
+            count = 1
+
+        if count <= 2:
+            k += 1
+            pointer += 1
+            self.swap(nums, pointer, curr_idx)
+        
+        curr_idx += 1
+
+    return k
+
+# ===============================================================
+# program 22: 90. Subsets II
+# URL: https://leetcode.com/problems/subsets-ii/
+# ===============================================================
+def subsetsWithDup(self, nums: list[int]) -> list[list[int]]:
+    nums.sort()
+
+    ans = []
+    val = nums[0]
+    count = 1
+    ans.append([])
+    ans.append([val])
+    length = len(ans)
+
+    for i in range(1, len(nums)):
+        if nums[i] == val:
+            count += 1
+        else:
+            val = nums[i]
+            count = 1
+        
+        if count == 1:
+            temp = [list for list in ans]
+            for list in temp:
+                smallAns = [ele for ele in list]
+                smallAns.append(nums[i])
+                ans.append(smallAns)
+            length = len(ans)
+        else:
+            mid = int(length / 2)
+
+            for j in range(len(ans) - mid, len(ans)):
+                smallAns = [ele for ele in ans[j]]
+                smallAns.append(nums[i])
+                ans.append(smallAns)
+    
+    return ans

@@ -125,3 +125,35 @@ def minDistance(self, word1: str, word2: str) -> int:
 
     dp = [[-1 for _ in range(len2 + 1)] for _ in range(len1 + 1)]
     return self.minDistance_memo(word1, len(word1), word2, len(word2), dp)
+
+# ===============================================================
+# Program 5: 91. Decode Ways
+# URL: https://leetcode.com/problems/decode-ways/
+# ===============================================================
+def numDecodings_memo(self, s, idx, dp):
+    if idx == len(s):
+        dp[idx] = 1
+        return dp[idx]
+
+    one = 0
+    two = 0
+
+    if s[idx] == '0':
+        dp[idx] = 0
+        return dp[idx]
+    
+    if dp[idx] != -1:
+        return dp[idx]
+        
+    one = self.numDecodings_memo(s, idx + 1, dp)
+
+    if idx <= len(s) - 2:
+        num = int(s[idx]) * 10 + int(s[idx + 1])
+        if num >= 10 and num <= 26:
+            two = self.numDecodings_memo(s, idx + 2, dp)
+    
+    dp[idx] = one + two
+    return dp[idx] 
+def numDecodings(self, s: str) -> int:
+    dp = [-1 for _ in range(len(s) + 1)]
+    return self.numDecodings_memo(s, 0, dp)
