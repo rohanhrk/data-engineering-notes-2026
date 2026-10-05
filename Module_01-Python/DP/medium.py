@@ -157,3 +157,32 @@ def numDecodings_memo(self, s, idx, dp):
 def numDecodings(self, s: str) -> int:
     dp = [-1 for _ in range(len(s) + 1)]
     return self.numDecodings_memo(s, 0, dp)
+
+# ===============================================================
+# program 6: 120. Triangle
+# URL: https://leetcode.com/problems/triangle/
+# ===============================================================
+def minimumTotal_memo(self, triangle, sr, sc, dr, dirs, dp):
+    if sr == dr:
+        dp[sr][sc] = triangle[sr][sc]
+        return dp[sr][sc]
+
+    if dp[sr][sc] != float("-inf"):
+        return dp[sr][sc]
+
+    min_path_sum = float("inf")
+    for dir in dirs:
+        nr = sr + dir[0]
+        nc = sc + dir[1]
+
+        if nr >= 0 and nr <= dr and nc >= 0 and nc < len(triangle[nr]):
+            min_path_sum = min(min_path_sum, self.minimumTotal_memo(triangle, nr, nc, dr, dirs, dp))
+    
+    dp[sr][sc] = min_path_sum + triangle[sr][sc]
+    return dp[sr][sc]
+
+def minimumTotal(self, triangle: list[list[int]]) -> int:
+    dirs = [[1, 0], [1, 1]]
+    rows = len(triangle)
+    dp = [[float("-inf") for _ in range(len(triangle[row]))] for row in range(rows)]
+    return self.minimumTotal_memo(triangle, 0, 0, rows - 1, dirs, dp)

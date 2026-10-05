@@ -753,3 +753,23 @@ def subsetsWithDup(self, nums: list[int]) -> list[list[int]]:
                 ans.append(smallAns)
     
     return ans
+
+# ===============================================================
+# program 23: 122. Best Time to Buy and Sell Stock II
+# URL: https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/
+# ===============================================================
+def maxProfit(self, prices: list[int]) -> int:
+    bd = 0 # buying day
+    sd = 0 # selling day
+    ov_profit = 0 # overall profit till now
+
+    for d in range(1, len(prices)):
+        if prices[d] < prices[d-1]:
+            ov_profit += prices[sd] - prices[bd]
+            bd = sd = d
+        else:
+            sd += 1
+    
+    ov_profit += prices[sd] - prices[bd]
+
+    return ov_profit
