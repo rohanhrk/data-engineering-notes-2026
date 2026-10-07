@@ -36,3 +36,53 @@ def exist(self, board: list[list[str]], word: str) -> bool:
                 return True
 
     return False
+
+# ============================================================================
+# program 2 : 130. Surrounded Regions
+# url : https://leetcode.com/problems/surrounded-regions/
+# ============================================================================
+def replace_by_char_dfs(self, board, sr, sc, char, dirs):
+    board[sr][sc] = char
+
+    for dir in dirs:
+        nr = sr + dir[0]
+        nc = sc + dir[1]
+
+        if nr >= 0 and nr < len(board) and nc >= 0 and nc < len(board[0]) and board[nr][nc] == 'O':
+            self.replace_by_char_dfs(board, nr, nc, char, dirs)
+
+def solve(self, board: list[list[str]]) -> None:
+    """
+    Do not return anything, modify board in-place instead.
+    """
+    dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+
+    # left border
+    for row in range(len(board)):
+        if board[row][0] == 'O':
+            self.replace_by_char_dfs(board, row, 0, 'Y', dirs)
+
+    # top border
+    for col in range(len(board[0])):
+        if board[0][col] == 'O':
+            self.replace_by_char_dfs(board, 0, col, 'Y', dirs)
+
+    # right border
+    for row in range(len(board)):
+        if board[row][len(board[0]) - 1] == 'O':
+            self.replace_by_char_dfs(board, row, len(board[0]) - 1, 'Y', dirs)
+
+    # bottom border
+    for col in range(len(board[0])):
+        if board[len(board) - 1][col] == 'O':
+            self.replace_by_char_dfs(board, len(board) - 1, col, 'Y', dirs)
+        
+    for row in range(len(board)):
+        for col in range(len(board[0])):
+            if board[row][col] == 'O':
+                board[row][col] = 'X'
+    
+    for row in range(len(board)):
+        for col in range(len(board[0])):
+            if board[row][col] == 'Y':
+                board[row][col] = 'O'

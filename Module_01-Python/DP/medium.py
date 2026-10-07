@@ -186,3 +186,65 @@ def minimumTotal(self, triangle: list[list[int]]) -> int:
     rows = len(triangle)
     dp = [[float("-inf") for _ in range(len(triangle[row]))] for row in range(rows)]
     return self.minimumTotal_memo(triangle, 0, 0, rows - 1, dirs, dp)
+
+# ===============================================================
+# program 7: 97. Interleaving String
+# URL: https://leetcode.com/problems/interleaving-string/
+# ===============================================================
+# 1 -> True, 0 -> False, -1 -> Unknown
+def isInterleave_tabu(self, s1, IDX1, s2, IDX2, s3, IDX3, dp):
+    for idx3 in range(len(s3), IDX3 - 1, -1):
+        for idx2 in range(len(s2), IDX2 - 1, -1):
+            for idx1 in range(len(s1), IDX1 - 1, -1):
+                if idx3 == len(s3):
+                    dp[idx1][idx2][idx3] = 1
+                    continue
+
+                if idx1 < len(s1) and idx2 < len(s2) and s1[idx1] != s3[idx3] and s2[idx2] != s3[idx3]:
+                    dp[idx1][idx2][idx3] = 0
+                    continue
+
+                flag = False
+                
+                if idx1 < len(s1) and s1[idx1] == s3[idx3]:
+                    flag = dp[idx1 + 1][idx2][idx3 + 1] == 1 or flag
+                if idx2 < len(s2) and s2[idx2] == s3[idx3]:
+                    flag = self.isInterleave_memo(s1, idx1, s2, idx2 + 1, s3, idx3 + 1, dp) == 1 or flag
+                
+                dp[idx1][idx2][idx3] = 1 if flag else 0
+    
+    return dp[IDX1][IDX2][IDX3]
+
+def isInterleave_memo(self, s1, idx1, s2, idx2, s3, idx3, dp):
+    if idx3 == len(s3):
+        dp[idx1][idx2][idx3] = 1
+        return dp[idx1][idx2][idx3]
+
+    if idx1 < len(s1) and idx2 < len(s2) and s1[idx1] != s3[idx3] and s2[idx2] != s3[idx3]:
+        dp[idx1][idx2][idx3] = 0
+        return dp[idx1][idx2][idx3]
+
+    if dp[idx1][idx2][idx3] != -1:
+        return dp[idx1][idx2][idx3]
+
+    flag = False
+    
+    if idx1 < len(s1) and s1[idx1] == s3[idx3]:
+        flag = self.isInterleave_memo(s1, idx1 + 1, s2, idx2, s3, idx3 + 1, dp) == 1 or flag
+    if idx2 < len(s2) and s2[idx2] == s3[idx3]:
+        flag = self.isInterleave_memo(s1, idx1, s2, idx2 + 1, s3, idx3 + 1, dp) == 1 or flag
+    
+    dp[idx1][idx2][idx3] = 1 if flag else 0
+    return dp[idx1][idx2][idx3] 
+
+def isInterleave(self, s1: str, s2: str, s3: str) -> bool:
+    len1 = len(s1)
+    len2 = len(s2)
+    len3 = len(s3)
+
+    dp = [[[-1 for _ in range(len(s3) + 1)] for _ in range(len(s2) + 1)] for _ in range(len(s1) + 1)]
+
+    if len1 + len2 != len3:
+        return False
+
+    return self.isInterleave_tabu(s1, 0, s2, 0, s3, 0, dp) == 1

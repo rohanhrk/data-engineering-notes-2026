@@ -1,0 +1,6 @@
+langgraph
+langchain
+langchain-ollama
+requests
+python-dotenv
+langgraph-cli[inmem]

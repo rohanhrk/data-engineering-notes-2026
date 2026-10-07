@@ -1,0 +1,16 @@
+[project]
+name = "langgraph-weather-agent"
+version = "0.1.0"
+description = "Local Ollama-powered LangGraph weather planning agent using Open-Meteo."
+requires-python = ">=3.10"
+dependencies = [
+    "langgraph",
+    "langchain",
+    "langchain-ollama",
+    "requests",
+    "python-dotenv",
+    "langgraph-cli[inmem]",
+]
+
+[tool.setuptools]
+py-modules = ["app"]
