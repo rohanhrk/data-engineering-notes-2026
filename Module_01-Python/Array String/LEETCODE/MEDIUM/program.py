@@ -773,3 +773,24 @@ def maxProfit(self, prices: list[int]) -> int:
     ov_profit += prices[sd] - prices[bd]
 
     return ov_profit
+
+# ===============================================================
+# program 24: 209. Minimum Size Subarray Sum
+# URL: https://leetcode.com/problems/minimum-size-subarray-sum/
+# ===============================================================
+def minSubArrayLen(self, target: int, nums: list[int]) -> int:
+    si = ei = 0
+    min_len_sarr = float("inf")
+    curr_sum =  0
+
+    while ei < len(nums):
+        curr_sum += nums[ei]
+
+        while si <= ei and curr_sum >= target:
+            min_len_sarr = min(min_len_sarr, ei - si + 1)
+            curr_sum -= nums[si]
+            si += 1
+        
+        ei += 1
+
+    return min_len_sarr if min_len_sarr != float("inf") else 0

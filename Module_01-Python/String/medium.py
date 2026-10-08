@@ -94,3 +94,35 @@ def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
         ans.append(list)
 
     return ans
+
+# ===============================================================
+# program 4: 424. Longest Repeating Character Replacement
+# URL: https://leetcode.com/problems/longest-repeating-character-replacement/
+# ===============================================================
+def characterReplacement(self, s: str, k: int) -> int:
+    start_idx = end_idx = 0
+    maxFreqCount = 0
+    maxFreqChar = ""
+    freq = [0]*26
+    max_ss = 0
+
+    while end_idx < len(s):
+        end_ch = s[end_idx]
+        freq[ord(end_ch) - ord('A')] += 1
+
+        if freq[ord(end_ch) - ord('A')] > maxFreqCount:
+            maxFreqCount = freq[ord(end_ch) - ord('A')]
+            maxFreqChar = end_ch
+        
+        if (end_idx - start_idx + 1) - maxFreqCount > k:
+            start_ch = s[start_idx]
+            freq[ord(start_ch) - ord('A')] -= 1
+            start_idx += 1
+
+            if start_ch == maxFreqChar:
+                maxFreqCount -= 1
+            
+        max_ss = max(max_ss, end_idx - start_idx + 1)
+        end_idx += 1
+    
+    return max_ss
