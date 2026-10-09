@@ -794,3 +794,60 @@ def minSubArrayLen(self, target: int, nums: list[int]) -> int:
         ei += 1
 
     return min_len_sarr if min_len_sarr != float("inf") else 0
+
+# ===============================================================
+# program 25: 134. Gas Station
+# URL: https://leetcode.com/problems/gas-station/description/
+# ===============================================================
+# Method 0:
+def canCompleteCircuit(self, gas: list[int], cost: list[int]) -> int:
+    total_gas = sum(gas)
+    total_cost = sum(cost)
+
+    if total_gas < total_cost:
+        return -1
+
+    idx = 0
+    pos_start_idx = -1 # possible starting index
+    av_gas = 0 
+    isAvailableGas = False # checking if previous iteration gas was available or not
+
+    while True:
+        idx = idx % len(gas)
+
+        av_gas += (gas[idx] - cost[idx])
+
+        if av_gas < 0:
+            av_gas = 0
+            isAvailableGas = False
+        else:
+            pos_start_idx = idx if not isAvailableGas else pos_start_idx
+            isAvailableGas = True
+        
+        if (idx + 1) % len(gas) == pos_start_idx and isAvailableGas:
+            break
+
+        idx += 1
+
+    return pos_start_idx
+
+# Method 1:
+def canCompleteCircuit(self, gas: list[int], cost: list[int]) -> int:
+    total_gas = sum(gas)
+    total_cost = sum(cost)
+
+    if total_gas < total_cost:
+        return -1
+
+    pos_start_idx = -1 # possible starting index
+    av_gas = 0 
+    min_prefix = float("inf")
+
+    for idx in range(len(gas)):
+        av_gas += (gas[idx] - cost[idx])
+
+        if av_gas < min_prefix:
+            min_prefix = av_gas
+            pos_start_idx = idx
+
+    return (pos_start_idx + 1) % len(gas)
