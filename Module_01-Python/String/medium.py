@@ -126,3 +126,48 @@ def characterReplacement(self, s: str, k: int) -> int:
         end_idx += 1
     
     return max_ss
+
+# ===============================================================
+# program 5: 131. Palindrome Partitioning
+# URL: https://leetcode.com/problems/palindrome-partitioning/
+# ===============================================================
+def isPalindrome(self, str):
+    if len(str) <= 1:
+        return str
+
+    rows = cols = len(str)
+    gap = 0
+    dp = [[False for _ in range(cols)] for _ in range(rows)]
+
+    while gap < rows:
+        row = 0
+        col = gap
+
+        while row < rows and col < cols:
+            if gap == 0:
+                dp[row][col] = True
+            elif gap == 1:
+                dp[row][col] = True if str[row] == str[col] else False
+            else:
+                dp[row][col] = True if str[row] == str[col] and dp[row + 1][col - 1] else False
+
+            row += 1
+            col += 1
+        gap += 1
+    
+    return dp[0][cols - 1]
+
+def partition_rec(self, s, length):
+    if length == 0:
+        return [[]]
+
+    myRes = []
+    for cut in range(len(s) - 1, -1, -1):
+        if self.isPalindrome(s[cut:length]):
+            recRes = self.partition_rec(s, cut)
+            for list in recRes:
+                list.append(s[cut:length])
+                myRes.append(list)
+    return myRes
+def partition(self, s: str) -> list[list[str]]:
+    return self.partition_rec(s, len(s))
