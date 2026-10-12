@@ -171,3 +171,13 @@ def partition_rec(self, s, length):
     return myRes
 def partition(self, s: str) -> list[list[str]]:
     return self.partition_rec(s, len(s))
+
+# ===============================================================
+# program 6: 151. Reverse Words in a String
+# URL: https://leetcode.com/problems/reverse-words-in-a-string/
+# ===============================================================
+def reverseWords(self, s: str) -> str:
+    str_arr = s.split(" ")
+    rev_str_arr = [str_arr[idx] for idx in range(len(str_arr) - 1, -1, -1) if str_arr[idx] != ""]
+    res = " ".join(rev_str_arr)
+    return res
