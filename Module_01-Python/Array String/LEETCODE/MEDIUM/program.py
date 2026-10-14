@@ -851,3 +851,34 @@ def canCompleteCircuit(self, gas: list[int], cost: list[int]) -> int:
             pos_start_idx = idx
 
     return (pos_start_idx + 1) % len(gas)
+
+# ===============================================================
+# program 26: 152. Maximum Product Subarray
+# URL: https://leetcode.com/problems/maximum-product-subarray/
+# ===============================================================
+def maxProduct(self, nums: list[int]) -> int:
+    left_prod = right_prod = 1
+    ov_max_prod = float("-inf")
+
+    for idx in range(len(nums)):
+        num = nums[idx]
+
+        if num == 0:
+            left_prod = 1
+            ov_max_prod = max(ov_max_prod, 0)
+        else:
+            left_prod *= num
+            ov_max_prod = max(ov_max_prod, left_prod)
+
+    
+    for idx in range(len(nums) - 1, -1, -1):
+        num = nums[idx]
+
+        if num == 0:
+            right_prod = 1
+            ov_max_prod = max(ov_max_prod, 0)
+        else:
+            right_prod *= num
+            ov_max_prod = max(ov_max_prod, right_prod)
+    
+    return ov_max_prod
