@@ -882,3 +882,21 @@ def maxProduct(self, nums: list[int]) -> int:
             ov_max_prod = max(ov_max_prod, right_prod)
     
     return ov_max_prod
+
+# ===============================================================
+# program 27: 153. Find Minimum in Rotated Sorted Array
+# URL: https://leetcode.com/problems/find-minimum-in-rotated-sorted-array
+# ===============================================================
+def findMin(self, nums: list[int]) -> int:
+    left = 0
+    right = len(nums) - 1
+
+    while left < right:
+        mid = left + int((right - left) / 2)
+
+        if nums[mid] < nums[right]:
+            right = mid
+        else:
+            left = mid + 1
+
+    return nums[left]

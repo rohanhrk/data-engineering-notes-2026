@@ -181,3 +181,66 @@ def reverseWords(self, s: str) -> str:
     rev_str_arr = [str_arr[idx] for idx in range(len(str_arr) - 1, -1, -1) if str_arr[idx] != ""]
     res = " ".join(rev_str_arr)
     return res
+
+# ===============================================================
+# program 7: 165. Compare Version Numbers
+# URL: https://leetcode.com/problems/compare-version-numbers/
+# ===============================================================
+def compareVersion(self, version1: str, version2: str) -> int:
+    st1, end1, st2, end2 = 0, 0, 0, 0
+    len1, len2 = len(version1), len(version2)
+
+    while end1 < len1 and end2 < len2:
+        while end1 < len1 and version1[end1] != ".":
+            end1 += 1
+        
+        rev1 = int(version1[st1:end1])
+
+        while end2 < len2 and version2[end2] != ".":
+            end2 += 1
+
+        rev2 = int(version2[st2:end2])
+
+        if rev1 > rev2:
+            return 1
+        elif rev1 < rev2:
+            return -1
+        else:
+            end1 += 1
+            end2 += 1
+
+            st1 = end1
+            st2 = end2
+    
+    while end1 < len1:
+        while end1 < len1 and version1[end1] != ".":
+            end1 += 1
+        
+        rev1 = int(version1[st1:end1])
+        rev2 = 0
+
+        if rev1 > rev2:
+            return 1
+        elif rev1 < rev2:
+            return -1
+        else:
+            end1 += 1
+            st1 = end1
+    
+    while end2 < len2:
+        rev1 = 0
+
+        while end2 < len2 and version2[end2] != ".":
+            end2 += 1
+
+        rev2 = int(version2[st2:end2])
+
+        if rev1 > rev2:
+            return 1
+        elif rev1 < rev2:
+            return -1
+        else:
+            end2 += 1
+            st2 = end2
+    
+    return 0
