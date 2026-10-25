@@ -900,3 +900,23 @@ def findMin(self, nums: list[int]) -> int:
             left = mid + 1
 
     return nums[left]
+
+# ===============================================================
+# program 28: 162. Find Peak Element
+# URL: https://leetcode.com/problems/find-peak-element/
+# ===============================================================
+def findPeakElement(self, nums: list[int]) -> int:
+    length = len(nums)
+    if length == 1:
+        return 0
+    
+    li, ri = 0, length - 1
+    while li < ri:
+        mid = li + (ri - li) // 2
+
+        if nums[mid] >= nums[mid + 1]:
+            ri = mid
+        else:
+            li = mid + 1
+
+    return li
