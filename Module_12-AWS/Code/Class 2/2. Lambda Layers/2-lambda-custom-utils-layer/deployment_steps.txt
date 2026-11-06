@@ -1,0 +1,71 @@
+=============================================
+  Lambda Layer Concept & Deployment Steps
+=============================================
+
+WHAT IS A LAMBDA LAYER?
+  - A Layer is a .zip containing reusable code (libraries/utilities)
+  - It gets extracted to /opt/python/ at runtime
+  - Multiple Lambda functions can share the same Layer
+  - Keeps your function code small and clean
+
+FOLDER STRUCTURE:
+  lambda_layer_example_v2/
+  |-- lambda_function.py          <-- Your Lambda function code (zip this separately)
+  |-- layer_code/
+      |-- python/
+          |-- utils.py            <-- Layer code (MUST be inside python/ folder)
+
+
+=============================================
+  STEP-BY-STEP DEPLOYMENT
+=============================================
+
+STEP 1: Create the Layer zip
+   cd layer_code
+   zip -r ../utils_layer.zip python/
+
+STEP 2: Upload the Layer in AWS Console
+   - Go to AWS Lambda -> Layers -> Create Layer
+   - Name: unit-converter-layer
+   - Upload: utils_layer.zip
+   - Compatible runtime: Python 3.14
+   - Click Create
+
+STEP 3: Create the Lambda function zip
+   zip function.zip lambda_function.py
+
+STEP 4: Create the Lambda function in AWS Console
+   - Go to AWS Lambda -> Create Function
+   - Function name: unit-converter
+   - Runtime: Python 3.14
+   - Upload function.zip in Code section
+
+STEP 5: Attach the Layer to your function
+   - Scroll down to "Layers" section in your Lambda function
+   - Click "Add a layer"
+   - Choose "Custom layers"
+   - Select "unit-converter-layer" -> Version 1
+   - Click Add
+
+
+=============================================
+  TEST EVENT (paste in AWS Console Test tab)
+=============================================
+
+Test 1 - Celsius to Fahrenheit:
+{
+  "value": 100,
+  "conversion": "celsius_to_fahrenheit"
+}
+
+Test 2 - Kilometers to Miles:
+{
+  "value": 42,
+  "conversion": "km_to_miles"
+}
+
+Test 3 - Kilograms to Pounds:
+{
+  "value": 70,
+  "conversion": "kg_to_pounds"
+}
