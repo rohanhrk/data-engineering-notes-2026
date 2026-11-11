@@ -68,7 +68,7 @@ def removeDuplicates(self, nums: List[int]) -> int:
     return unique_count
 
 # ----------------------------------------------------
-# Q4. 26. Remove Duplicates from Sorted Array
+# Q4. 27. Remove Element
 # url: https://leetcode.com/problems/remove-element/description/?envType=problem-list-v2&envId=array
 def swap(self, nums, st_idx, end_idx):
     nums[st_idx], nums[end_idx] = nums[end_idx], nums[st_idx]
@@ -134,3 +134,50 @@ def plusOne(self, digits: List[int]) -> List[int]:
     result = result[::-1]
 
     return result
+
+# ============================================================================
+# program 7 : 219. Contains Duplicate II
+# url : https://leetcode.com/problems/contains-duplicate-ii/description/
+# ============================================================================
+def containsNearbyDuplicate(self, nums: list[int], k: int) -> bool:
+    # creating a dictionary num vs idx
+    map = {}
+
+    for idx, num in enumerate(nums):
+        if num in map.keys() and abs(map.get(num) - idx) <= k and nums[map.get(num)] == nums[idx]:
+            return True
+        
+        map[num] = idx
+    
+    return False
+
+# ============================================================================
+# program 8 : 88. Merge Sorted Array
+# url : https://leetcode.com/problems/merge-sorted-array/?envType=problem-list-v2&envId=array
+# ============================================================================
+def merge(self, nums1: list[int], m: int, nums2: list[int], n: int) -> None:
+    """
+    Do not return anything, modify nums1 in-place instead.
+    """
+    temp = []
+    idx1 = idx2 = 0
+
+    while idx1 < m and idx2 < n:
+        if nums1[idx1] <= nums2[idx2]:
+            temp.append(nums1[idx1])
+            idx1 += 1
+        else:
+            temp.append(nums2[idx2])
+            idx2 += 1
+    
+    while idx1 < m:
+        temp.append(nums1[idx1])
+        idx1 += 1
+    
+    while idx2 < n:
+        temp.append(nums2[idx2])
+        idx2 += 1
+
+    for idx in range(len(temp)):
+        nums1[idx] = temp[idx]
+    
