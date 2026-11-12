@@ -180,4 +180,29 @@ def merge(self, nums1: list[int], m: int, nums2: list[int], n: int) -> None:
 
     for idx in range(len(temp)):
         nums1[idx] = temp[idx]
+
+
+# ============================================================================
+# program 9 : 108. Convert Sorted Array to Binary Search Tree
+# url : https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/description/?envType=problem-list-v2&envId=array
+# ============================================================================
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+        
+def sortedArrayToBST_(self, nums: list[int], left: int, right: int) -> TreeNode | None:
+    if left > right:
+        return None
+
+    mid: int = left + (right - left) // 2
+
+    root = TreeNode(nums[mid])
+    root.left = self.sortedArrayToBST_(nums, left, mid - 1)
+    root.right = self.sortedArrayToBST_(nums, mid + 1, right)
+
+    return root
+def sortedArrayToBST(self, nums: list[int]) -> TreeNode | None:
+    return self.sortedArrayToBST_(nums, 0, len(nums) - 1)
     
