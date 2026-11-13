@@ -205,4 +205,36 @@ def sortedArrayToBST_(self, nums: list[int], left: int, right: int) -> TreeNode 
     return root
 def sortedArrayToBST(self, nums: list[int]) -> TreeNode | None:
     return self.sortedArrayToBST_(nums, 0, len(nums) - 1)
+
+# ============================================================================
+# program 10 : 118. Pascal's Triangle
+# url : https://leetcode.com/problems/pascals-triangle/description/?envType=problem-list-v2&envId=array
+# ============================================================================
+def generate(self, numRows: int) -> list[list[int]]:
+    outer_list: list[list[int]] = []
+    for row in range(numRows):
+        inner_list: list[int] = []
+        for col in range(row + 1):
+            if col == 0 or col == row:
+                inner_list.append(1)
+                continue
+            sum = outer_list[row - 1][col] + outer_list[row - 1][col - 1]
+            inner_list.append(sum)
+        outer_list.append(inner_list)
+    return outer_list
+
+# ============================================================================
+# program 11 : 121. Best Time to Buy and Sell Stock
+# url : https://leetcode.com/problems/best-time-to-buy-and-sell-stock/description/?envType=problem-list-v2&envId=array
+# ============================================================================
+def maxProfit(self, prices: list[int]) -> int:
+    min_price = float("inf") # store least buying price
+    max_profit = 0 # store max profit
+
+    for price in prices:
+        if price < min_price:
+            min_price = price
+        else:
+            max_profit = max(max_profit, price - min_price)
+    return max_profit
     
