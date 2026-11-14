@@ -238,3 +238,24 @@ def maxProfit(self, prices: list[int]) -> int:
             max_profit = max(max_profit, price - min_price)
     return max_profit
     
+
+# ============================================================================
+# program 12 : 169. Majority Element
+# url : https://leetcode.com/problems/majority-element/description/?envType=problem-list-v2&envId=array
+# ============================================================================
+def majorityElement(self, nums: list[int]) -> int:
+    count = 1
+    val = nums[0]
+
+    for idx in range(1, len(nums)):
+        if val == nums[idx]:
+            count += 1
+        else:
+            # val != nums[idx]
+            if count > 0:
+                count -= 1
+            else:
+                val = nums[idx]
+                count = 1
+
+    return val
