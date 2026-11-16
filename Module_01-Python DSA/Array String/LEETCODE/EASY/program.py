@@ -259,3 +259,35 @@ def majorityElement(self, nums: list[int]) -> int:
                 count = 1
 
     return val
+
+# ============================================================================
+# program 13 : 217. Contains Duplicate
+# url : https://leetcode.com/problems/contains-duplicate/description/?envType=problem-list-v2&envId=array
+# ============================================================================
+def containsDuplicate(self, nums: list[int]) -> bool:
+    found_set = set()
+
+    for num in nums:
+        if num in found_set:
+            return True
+        found_set.add(num)
+
+    return False
+
+# ============================================================================
+# program 14 : 228. Summary Ranges
+# url : https://leetcode.com/problems/summary-ranges/description/?envType=problem-list-v2&envId=array
+# ============================================================================
+def summaryRanges(self, nums: list[int]) -> list[str]:
+    if len(nums) == 0:
+        return []
+    a = b = nums[0]
+    ans = []
+    for idx in range(1, len(nums)):
+        if nums[idx] != nums[idx - 1] + 1:
+            ans.append(f"{a}->{b}" if a != b else f"{a}")
+            a = b = nums[idx]
+        else:
+            b = nums[idx]
+    ans.append(f"{a}->{b}" if a != b else f"{a}")
+    return ans
