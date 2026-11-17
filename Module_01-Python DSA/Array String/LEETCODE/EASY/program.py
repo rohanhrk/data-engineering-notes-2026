@@ -291,3 +291,26 @@ def summaryRanges(self, nums: list[int]) -> list[str]:
             b = nums[idx]
     ans.append(f"{a}->{b}" if a != b else f"{a}")
     return ans
+
+# ============================================================================
+# program 15 : 414. Third Maximum Number
+# url : https://leetcode.com/problems/third-maximum-number/description/?envType=problem-list-v2&envId=array
+# ============================================================================
+def thirdMax(self, nums: list[int]) -> int:
+    max1 = max2 = max3 = float("-inf")
+
+    for num in nums:
+        if num == max1 or num == max2:
+            continue
+        
+        if num > max1:
+            max3 = max2
+            max2 = max1
+            max1 = num
+        elif num > max2:
+            max3 = max2
+            max2 = num
+        elif num > max3:
+            max3 = num
+    
+    return max3 if max3 != float("-inf") else max1
