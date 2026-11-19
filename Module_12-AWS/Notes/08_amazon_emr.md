@@ -448,3 +448,167 @@ aws s3 rm s3://$BUCKET/scripts/orders_agg.py
 
 **Optional extension:** run the same script as a step on a transient EMR on EC2 cluster using the `create-cluster` command in section 3.5b and compare startup time, control and cost. Remember to terminate the cluster (`--auto-terminate`) and delete logs.
 
+---
+
+## 6. Interview Preparation — Questions WITH Answers
+
+### A. Conceptual Questions (10)
+
+**Q1. What is Amazon EMR and which deployment options exist?**
+EMR is a managed platform for running big data frameworks (Spark, Hadoop/Hive, Presto/Trino, HBase, Flink) on AWS. Options: **EMR on EC2** (clusters with primary, core, task nodes you configure), **EMR Serverless** (create an application and submit job runs; EMR provisions workers automatically), and **EMR on EKS** (Spark jobs on Kubernetes). EMR handles provisioning, configuration, monitoring and integration with S3, Glue, IAM and CloudWatch. *Keywords: managed Hadoop/Spark, transient clusters, EMRFS, YARN, Spot.* Use it for large or customised processing; Glue for simpler serverless ETL.
+
+**Q2. Explain primary, core and task nodes.**
+The **primary node** runs cluster coordination (YARN ResourceManager, HDFS NameNode) and web UIs; one per cluster (a multi-primary option exists for high availability). **Core nodes** run YARN NodeManagers and **store HDFS data**; scaling them down needs HDFS decommissioning and losing them risks data. **Task nodes** run only compute (no HDFS) so they can be added/removed or run on **Spot** safely. Best practice: on-demand for primary and core, Spot for task nodes, and keep durable data in S3.
+
+**Q3. HDFS vs EMRFS/S3 — where should data live?**
+HDFS is cluster-local, ephemeral and sized by the nodes; it's fast for iterative intermediate data. EMRFS lets Hadoop/Spark read/write S3 as a file system (`s3://`), giving durable, cheap, unlimited storage that outlives the cluster and is shared with Athena/Glue/Redshift. Modern EMR designs keep **inputs and outputs in S3** and use HDFS/local disks only for temporary shuffle data. This enables transient clusters and independent scaling of compute and storage. Mention S3 consistency is strong, and the S3-optimised committer for safe writes.
+
+**Q4. How do steps and bootstrap actions differ? What are transient vs long-running clusters?**
+A **step** is a unit of work submitted to a running cluster, e.g. `spark-submit` via `command-runner.jar`, with `ActionOnFailure` controlling what happens on failure. A **bootstrap action** is a script run on every node before applications start (install libraries/OS tweaks). A **transient** cluster is created for a batch run and terminates after its steps (cost-efficient, no idle time); a **long-running** cluster remains for interactive/streaming/frequent workloads and needs scaling and maintenance. Use IaC/Step Functions to create and terminate clusters per job.
+
+**Q5. How does Spark run on YARN in EMR? What is deploy mode?**
+Spark requests containers from YARN: one for the application master/driver and others for executors. In **cluster mode** the driver runs inside the cluster (on a core/task node), so the job continues if the submitting client disconnects — recommended for production steps. In **client mode** the driver runs where you submit (primary node/notebook) — good for interactive sessions but ties the job to the client. EMR enables **dynamic allocation** by default, and `maximizeResourceAllocation` can set executor sizes from instance types. Right-size executors (cores/memory) to fit nodes with overhead.
+
+**Q6. How does EMR scaling work?**
+EMR **managed scaling** adjusts the cluster size between configured minimum/maximum limits automatically, intelligently balancing core and task nodes (and Spot vs on-demand) based on metrics like YARN memory and containers pending. Older **custom auto scaling policies** use CloudWatch-based rules per instance group. **Instance fleets** let you mix instance types and purchase options for capacity. **EMR Serverless** scales workers per job automatically, with optional pre-initialised capacity. Caveats: scaling down core nodes is slow; ensure applications tolerate nodes leaving.
+
+**Q7. How do you use Spot instances safely on EMR?**
+Run **task nodes on Spot** and keep primary/core on-demand; use **instance fleets** to diversify instance types and AZs so EMR can find capacity; set reasonable timeouts and use Spark's task retry/graceful decommissioning; avoid long single-stage tasks that lose too much work on interruption; for critical SLA jobs, mix on-demand capacity. Savings can reach large percentages but plan for interruptions and "insufficient capacity" cases with fallback to on-demand. Monitor Spot interruption rates and job duration.
+
+**Q8. Explain EMR security: roles, networking and encryption.**
+Roles: the **EMR service role** (EMR manages resources), the **EC2 instance profile** (permissions for code on nodes — scope to needed S3/Glue/KMS), and for Serverless the **job execution role**. Networking: launch in private subnets, use security groups and S3 gateway endpoints, enable **EMR Block Public Access**. Data protection: **security configurations** for at-rest (S3 SSE/CSE, EBS/local disk encryption) and in-transit (TLS) encryption, Kerberos for authentication, Lake Formation for fine-grained catalog access, CloudTrail/log auditing. Avoid broad `s3:*` on instance profiles.
+
+**Q9. How do you monitor and debug an EMR job?**
+Enable the S3 **log URI**, then inspect step logs (`controller`, `stderr`, `stdout`) and container logs for Spark executors. Use the **Spark History Server**/YARN ResourceManager UI (persistent app UIs) to check stages, skew, shuffle spill and failed tasks; CloudWatch metrics for YARN memory, HDFS utilisation and running apps; EMR console step status. For Serverless use job run logs in S3/CloudWatch and the Spark UI link. Common root causes: executor memory limits, skew, disk full, S3 permissions, bad inputs.
+
+**Q10. What are the main performance and cost optimisation techniques on EMR?**
+Performance: Parquet/ORC + partitioning, compaction of small files, AQE and broadcast joins, proper executor sizing and shuffle partitions, S3-optimised committer, local compute near S3, avoiding driver collects, Graviton instances. Cost: transient clusters, EMR Serverless for intermittent jobs, Spot task nodes, managed scaling with sensible min/max, right-sized instances, shutting down idle clusters, reserved/Savings Plans for steady use, S3 lifecycle for logs and intermediates. Measure with job duration, resource utilisation and cost per run.
+
+### B. Scenario-Based Questions (5)
+
+**S1. A 24/7 EMR cluster running a nightly 2-hour Spark job costs thousands per month.**
+*Problem:* paying for idle capacity. *Solution:* switch to **transient clusters** orchestrated by Step Functions/MWAA (create → run step → terminate) with Spot task nodes and managed scaling; or use **EMR Serverless** if the job tolerates serverless constraints. Store all data and scripts in S3, ship logs to S3, parameterise runs by date. *Why:* billing only during the 2 hours. *Alternatives:* Glue if the job is simple. *Trade-off:* cluster startup time (minutes) and orchestration setup; interactive users need a separate shared cluster/EMR Studio.
+
+**S2. Spark jobs intermittently fail when Spot task nodes are reclaimed.**
+*Problem:* losing nodes mid-stage. *Solution:* keep core nodes on-demand; use **instance fleets** with several instance types/AZs; enable Spark retry (`spark.task.maxFailures`, stage retries), use external shuffle/graceful decommissioning settings available in EMR, split long tasks into smaller partitions, checkpoint intermediate results to S3 for long pipelines, and set an on-demand fallback or a mix (e.g. 30% on-demand) for SLAs. *Why:* reduces blast radius of interruptions. *Alternatives:* Serverless to avoid managing Spot. *Trade-off:* higher cost with more on-demand.
+
+**S3. Migrate an on-premises Hadoop cluster (500 TB in HDFS, Hive jobs) to AWS.**
+*Solution:* land data in **S3** using DataSync/Snowball/S3DistCp over Direct Connect; migrate the Hive metastore to the **Glue Data Catalog**; run existing Hive/Spark jobs on EMR with minimal changes pointing to `s3://` paths; decouple compute so clusters are transient; validate with data checksums and job output comparisons; later modernise to Parquet/Iceberg and Athena. *Why:* S3 replaces HDFS as the durable store and enables elasticity. *Alternatives:* lift HDFS onto EMR HDFS (costly, loses decoupling). *Trade-off:* initial transfer time and testing for S3 semantics (rename costs, listing) and committers.
+
+**S4. A Spark join job fails with executor OOM and one task runs far longer than others.**
+*Problem:* data skew on the join key. *Solution:* enable AQE skew handling (`spark.sql.adaptive.skewJoin.enabled`), broadcast the small side if possible, **salt** the hot keys, increase `spark.sql.shuffle.partitions`, filter early, use larger executors (memory) for that stage, and examine the Spark UI for the skewed key. *Why:* a few huge partitions overload single executors; adding nodes alone doesn't fix it. *Alternatives:* pre-aggregate or split hot keys into a separate path. *Trade-off:* salting complicates logic and increases data size for the small side.
+
+**S5. A small team with occasional (weekly) Spark jobs asks whether to use Glue, EMR on EC2 or EMR Serverless.**
+*Recommendation:* start with **Glue** (lowest ops, integrated catalog) if jobs are standard and fit its limits; choose **EMR Serverless** if they need specific Spark versions/configurations, libraries or Hive but still want no clusters; choose EMR on EC2 only if they need cluster-level control, special frameworks (HBase, Presto) or very large steady workloads where Spot/Reserved capacity lowers cost. *Why:* ops overhead should match job frequency. *Alternatives:* Databricks if they want a collaborative platform. *Trade-off:* Glue/Serverless give less low-level tuning than EC2 clusters.
+
+### C. Troubleshooting Questions (3)
+
+**T1. The cluster is stuck in `STARTING`/`BOOTSTRAPPING` or terminates with errors immediately.**
+*Root causes:* bootstrap action failing or taking too long; subnet without capacity or wrong AZ for instance type (`INSUFFICIENT_INSTANCE_CAPACITY`); service quota limits on instances/vCPUs; invalid security group/VPC settings or missing route to S3 (bootstrap scripts can't download); IAM service role/instance profile missing or lacking permissions; invalid release label or application configuration JSON. *Debug approach:* `aws emr describe-cluster --cluster-id j-XXXX --query Cluster.Status.StateChangeReason`; read the bootstrap action logs in S3 (`node/<instance>/bootstrap-actions/`); check EC2 capacity/quotas in the console; verify roles with `aws emr create-default-roles` or the proper custom roles; ensure subnet has S3 access (endpoint/NAT). *Fix:* correct the failing script/permissions, choose different instance types/AZ or use instance fleets, raise quotas, fix the config.
+
+**T2. A Spark step fails: `ExecutorLostFailure`, "Container killed by YARN for exceeding memory limits" or `java.lang.OutOfMemoryError`.**
+*Root causes:* executor memory/overhead too small; skewed partitions; too few shuffle partitions causing huge partitions; large broadcast; Python (PySpark) memory beyond JVM settings; cores per executor too high leading to memory pressure; Spot loss. *Debug:* step `stderr` and container logs; Spark UI stage details (task time distribution, spill); YARN diagnostics message; check partition sizes. *Fix:* increase `spark.executor.memory` and `spark.executor.memoryOverhead` (or `spark.executor.memoryOverhead` for PySpark), reduce executor cores, increase `spark.sql.shuffle.partitions`, enable AQE, repartition by a better key, avoid collecting large data on the driver, use larger instance types.
+```bash
+spark-submit --conf spark.executor.memory=8g --conf spark.executor.memoryOverhead=2g \
+  --conf spark.sql.shuffle.partitions=800 --conf spark.sql.adaptive.enabled=true job.py
+```
+
+**T3. Jobs fail with "No space left on device", unhealthy nodes, or S3 `AccessDenied`/slow writes.**
+*Root causes:* undersized EBS/instance storage for shuffle/spill or HDFS (nodes marked unhealthy by YARN at ~90% disk); logs/temp files filling disks; the EC2 instance profile or Serverless execution role lacks S3/KMS permissions; S3 request throttling (`503 SlowDown`) from too many small files/high request rates; wrong bucket Region. *Debug:* CloudWatch `HDFSUtilization` and YARN `UnhealthyNodes`; `df -h` via SSM/SSH; step logs for the exact exception; check the instance-profile policy (`aws iam simulate-principal-policy`); S3 request metrics. *Fix:* increase EBS volume size/instance types, clean temp data, reduce shuffle volume, store outputs in S3; fix IAM/KMS permissions; reduce file counts, use the S3-optimised committer and spread prefixes; keep cluster and bucket in the same Region.
+
+---
+
+## 7. Revision and Quick Reference
+
+### Key takeaways
+- EMR = managed Spark/Hadoop ecosystem on EC2, Serverless or EKS.
+- Keep data in S3 (EMRFS); use HDFS only for temporary data.
+- Transient clusters + Spot task nodes + managed scaling = cost efficiency.
+- Primary/core on-demand; task nodes Spot.
+- Logs to S3 and Spark History Server for debugging.
+
+### Commonly forgotten details
+- Always set a log URI before the cluster terminates.
+- `--auto-terminate` for transient clusters; otherwise billing continues.
+- EMR needs both a service role and an EC2 instance profile (Serverless uses an execution role).
+- Core node loss = HDFS data loss risk; don't put critical data only in HDFS.
+- Bootstrap failures stop cluster creation.
+- Default `cluster` deploy mode for production steps.
+- EMR Serverless apps stop when idle only if auto-stop is enabled.
+- Spark's `coalesce(1)` on big outputs is a bottleneck.
+
+### Important commands and syntax
+```bash
+aws emr create-default-roles
+aws emr create-cluster --name n --release-label emr-7.x.y --applications Name=Spark \
+  --instance-groups InstanceGroupType=MASTER,InstanceCount=1,InstanceType=m5.xlarge InstanceGroupType=CORE,InstanceCount=2,InstanceType=m5.xlarge \
+  --use-default-roles --log-uri s3://b/logs/ --auto-terminate --steps Type=Spark,Name=s,Args=[...]
+aws emr list-clusters --active
+aws emr describe-cluster --cluster-id j-XXXX
+aws emr add-steps --cluster-id j-XXXX --steps Type=Spark,Name=s,ActionOnFailure=CONTINUE,Args=[--deploy-mode,cluster,s3://b/job.py]
+aws emr terminate-clusters --cluster-ids j-XXXX
+aws emr-serverless create-application --name a --type SPARK --release-label emr-7.x.y
+aws emr-serverless start-job-run --application-id <id> --execution-role-arn <arn> --job-driver '{"sparkSubmit":{...}}'
+aws emr-serverless get-job-run --application-id <id> --job-run-id <jr>
+```
+
+### Frequently used configurations
+Release label; instance groups/fleets; managed scaling min/max; Spot allocation strategy; `maximizeResourceAllocation`; Spark: `spark.executor.memory/cores/memoryOverhead`, `spark.sql.shuffle.partitions`, `spark.sql.adaptive.enabled`; Glue Catalog metastore classification; security configuration; EBS volume size; log URI; Serverless: auto-stop idle timeout, pre-initialised capacity, max capacity.
+
+### Common errors and solutions
+| Error | Solution |
+|---|---|
+| Cluster fails at bootstrap | Fix script/permissions/network to S3 |
+| `INSUFFICIENT_INSTANCE_CAPACITY` | Other instance types/AZs, instance fleets |
+| Executor memory exceeded | Tune memory/overhead, partitions, AQE |
+| `No space left on device` | Bigger EBS/instance, reduce spill |
+| `AccessDenied` on S3 | Fix instance profile/execution role/KMS |
+| Spot interruption failures | On-demand core, diversified fleets, retries |
+
+### Service limitations
+Cluster start takes minutes; HDFS is ephemeral; you manage tuning on EC2; EMR Serverless has fewer knobs and supports specific applications/releases; vCPU/instance quotas; security group/subnet constraints; software versions tied to release labels.
+
+### Performance and cost optimisation
+Parquet/ORC; partitioning/compaction; AQE; broadcast; right-size executors; Graviton; Spot task nodes; managed scaling; transient clusters; Serverless for intermittent jobs; clean up logs/intermediate data; monitor cost per run.
+
+### Security best practices
+Private subnets and endpoints; least-privilege instance profile/execution roles; security configuration for encryption; Kerberos/Lake Formation where required; EMR Block Public Access; restrict SSH, prefer SSM; patch via new releases; audit with CloudTrail.
+
+### Connections with other AWS services
+S3/EMRFS, Glue Data Catalog, IAM/KMS, Lake Formation, Athena/Redshift (consumers), Step Functions/MWAA/EventBridge (orchestration), CloudWatch/SNS (monitoring), Kinesis/MSK (streaming sources), DynamoDB, EKS, Secrets Manager.
+
+### Quick revision cheat sheet
+```
+Primary (coordinate) | Core (HDFS+compute) | Task (compute only, Spot)
+Data in S3 via EMRFS ; HDFS temporary ; logs to S3
+Transient cluster: create -> steps -> auto-terminate ; Serverless: application + job runs
+YARN: driver + executors ; cluster deploy mode ; dynamic allocation ; AQE
+Cost: Spot task nodes, managed scaling, Graviton, transient/Serverless
+Debug: log URI, Spark History Server, YARN diagnostics
+```
+
+### 10 rapid-fire revision questions
+1. **Which node types store HDFS data?** Core nodes.
+2. **Which nodes are best for Spot?** Task nodes.
+3. **Where should durable data live?** In S3 (via EMRFS).
+4. **What makes a cluster transient?** It terminates automatically after its steps (`--auto-terminate`).
+5. **What is a bootstrap action?** A script executed on each node at startup.
+6. **How do you submit work to a running cluster?** Add a step (e.g. `spark-submit` via `command-runner.jar`).
+7. **What role gives code on EMR nodes access to S3?** The EC2 instance profile role.
+8. **What does EMR Serverless use for permissions?** A job execution role.
+9. **What lets EMR share table metadata with Athena?** The Glue Data Catalog as Hive metastore.
+10. **Which deploy mode is recommended for production steps?** Cluster mode.
+
+---
+
+## Official AWS documentation
+- Amazon EMR Management Guide — https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-what-is-emr.html
+- EMR Release Guide (versions) — https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-release-components.html
+- Cluster configuration and node types — https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-plan-instances.html
+- Managed scaling — https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-managed-scaling.html
+- EMR Serverless User Guide — https://docs.aws.amazon.com/emr/latest/EMR-Serverless-UserGuide/emr-serverless.html
+- EMR on EKS — https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/emr-eks.html
+- Security — https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-security.html
+- Spark on EMR performance — https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-spark-performance.html
+- EMR pricing — https://aws.amazon.com/emr/pricing/
+- Boto3 EMR reference — https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/emr.html
