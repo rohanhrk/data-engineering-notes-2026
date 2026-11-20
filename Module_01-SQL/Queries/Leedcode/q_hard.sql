@@ -283,4 +283,34 @@ WHERE exists (
 ) 
 ORDER BY cycle_length DESC, total_study_hours DESC
 
+-- -------------------------------------------------------------
+-- Q9. 601. Human Traffic of Stadium
+-- url: https://leetcode.com/problems/human-traffic-of-stadium/description/
+-- -------------------------------------------------------------
+WITH windowed_cte as (
+    SELECT
+        id,
+        visit_date,
+        people,
+        id - row_number() over(order by visit_date) as group_id
+    FROM Stadium 
+    WHERE people >= 100
+), group_count_cte as (
+    SELECT
+        group_id
+    FROM windowed_cte
+    GROUP BY group_id
+    HAVING count(*) >= 3
+    ORDER BY visit_date 
+)
+SELECT
+    w.id,
+    w.visit_date,
+    w.people
+FROM windowed_cte w
+WHERE exists (
+    SELECT 1
+    FROM group_count_cte g
+    WHERE w.group_id = g.group_id 
+)
 
