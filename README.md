@@ -1,4 +1,4 @@
-# Data Engineering Notes 2026
+# Data Engineering Notes
 
 A practical, continuously updated knowledge base for learning **Data Engineering**, strengthening fundamentals, preparing for interviews, and documenting hands-on implementation.
 
