@@ -2,7 +2,7 @@
 
 A practical, continuously updated knowledge base for learning **Data Engineering**, strengthening fundamentals, preparing for interviews, and documenting hands-on implementation.
 
-This repository brings together concise notes, code examples, SQL practice, platform concepts, troubleshooting learnings, and end-to-end project work. The goal is to understand how data systems are designed and operated—not just collect tool-specific commands.
+This repository brings together concise notes, code examples, SQL practice, platform concepts, troubleshooting learnings, and end-to-end project work. The goal is to understand how data systems are designed and operated-not just collect tool-specific commands.
 
 ## Learning Focus
 
