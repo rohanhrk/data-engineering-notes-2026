@@ -28,26 +28,28 @@ The roadmap below presents a structured path through the core concepts, platform
 
 ```mermaid
 flowchart TB
-    A(["START<br/>Data Engineering Learning Path"])
+    subgraph OUTER["OUTER LOOP · Build the foundations and core platform skills"]
+        direction LR
+        A(["START<br/>Data Engineering Learning Path"]) --> B(["STOP 01<br/>Python Fundamentals"]) --> C(["STOP 02<br/>SQL & Database Fundamentals"]) --> D(["STOP 03<br/>Linux, Git, Storage & File Formats"])
+    end
 
-    A --> B(["STOP 01<br/>Python Fundamentals"])
-    B --> C(["STOP 02<br/>SQL & Database Fundamentals"])
-    C --> D(["STOP 03<br/>Linux, Git, Storage & File Formats"])
     D --> E(["STOP 04<br/>Batch Ingestion & ETL / ELT"])
-    E --> F(["STOP 05<br/>Apache Spark & PySpark"])
-    F --> G(["STOP 06<br/>Databricks, Delta Lake & Medallion Architecture"])
-    G --> H(["STOP 07<br/>Data Warehousing & Data Modelling"])
+    subgraph MIDDLE["CONTINUE CLOCKWISE · Processing and architecture"]
+        direction RL
+        E --> F(["STOP 05<br/>Apache Spark & PySpark"]) --> G(["STOP 06<br/>Databricks, Delta Lake<br/>& Medallion Architecture"]) --> H(["STOP 07<br/>Data Warehousing<br/>& Data Modelling"])
+    end
+
     H --> I(["STOP 08<br/>AWS for Data Engineering"])
-    I --> J(["STOP 09<br/>Orchestration & Production Engineering"])
-    J --> K(["STOP 10<br/>Data Quality, Testing & Monitoring"])
-    K --> L(["STOP 11<br/>End-to-End Data Engineering Projects"])
-    L --> M(["FINAL DESTINATION<br/>Design, Build & Operate Reliable Data Systems"])
+    subgraph INNER["TURN INWARD · Operate and apply"]
+        direction LR
+        I --> J(["STOP 09<br/>Orchestration &<br/>Production Engineering"]) --> K(["STOP 10<br/>Data Quality, Testing<br/>& Monitoring"]) --> L(["STOP 11<br/>End-to-End Projects"])
+    end
+    L --> M(["FINAL DESTINATION<br/>Design, Build & Operate<br/>Reliable Data Systems"])
 
-    N["Optional technology stops:<br/>MongoDB · Kafka · Snowflake · Apache Iceberg"]
+    N["Optional technologies:<br/>MongoDB · Kafka · Snowflake · Apache Iceberg"]
     O["Further exploration:<br/>AI for Data Engineering"]
-
-    C -. Broader data platform concepts .-> N
-    L -. Advanced extension .-> O
+    C -.-> N
+    L -.-> O
 
     classDef start fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
     classDef stop fill:#f1f5f9,stroke:#64748b,color:#0f172a,stroke-width:1.5px
