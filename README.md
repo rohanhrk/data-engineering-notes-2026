@@ -22,6 +22,57 @@ The learning path is **batch-processing first**, with emphasis on building relia
 | AI for Data Engineering | AI fundamentals and practical ways AI capabilities can support data workflows |
 | Projects | End-to-end implementations that connect the concepts across the stack |
 
+## Data Engineering Learning Roadmap
+
+The roadmap below presents a structured path through the core concepts, platforms, and practices used to design, build, and operate data systems. It is organized around batch data engineering, with optional technologies and advanced topics shown as extensions.
+
+```mermaid
+flowchart TB
+    A(["START<br/>Data Engineering Learning Path"])
+
+    A --> B(["STOP 01<br/>Python Fundamentals"])
+    B --> C(["STOP 02<br/>SQL & Database Fundamentals"])
+    C --> D(["STOP 03<br/>Linux, Git, Storage & File Formats"])
+    D --> E(["STOP 04<br/>Batch Ingestion & ETL / ELT"])
+    E --> F(["STOP 05<br/>Apache Spark & PySpark"])
+    F --> G(["STOP 06<br/>Databricks, Delta Lake & Medallion Architecture"])
+    G --> H(["STOP 07<br/>Data Warehousing & Data Modelling"])
+    H --> I(["STOP 08<br/>AWS for Data Engineering"])
+    I --> J(["STOP 09<br/>Orchestration & Production Engineering"])
+    J --> K(["STOP 10<br/>Data Quality, Testing & Monitoring"])
+    K --> L(["STOP 11<br/>End-to-End Data Engineering Projects"])
+    L --> M(["FINAL DESTINATION<br/>Design, Build & Operate Reliable Data Systems"])
+
+    N["Optional technology stops:<br/>MongoDB · Kafka · Snowflake · Apache Iceberg"]
+    O["Further exploration:<br/>AI for Data Engineering"]
+
+    C -. Broader data platform concepts .-> N
+    L -. Advanced extension .-> O
+
+    classDef start fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,stroke-width:2px
+    classDef stop fill:#f1f5f9,stroke:#64748b,color:#0f172a,stroke-width:1.5px
+    classDef finish fill:#dcfce7,stroke:#16a34a,color:#14532d,stroke-width:2px
+    classDef optional fill:#fff7ed,stroke:#ea580c,color:#7c2d12,stroke-dasharray:5 5
+
+    class A start
+    class B,C,D,E,F,G,H,I,J,K,L stop
+    class M finish
+    class N,O optional
+```
+
+### Roadmap Overview
+
+| Route | Learning outcome |
+|---|---|
+| Stops 01–03 | Establish programming, SQL, database, and data platform foundations |
+| Stops 04–06 | Understand batch ingestion, distributed processing, and lakehouse workflows |
+| Stops 07–08 | Learn data architecture, modelling, and cloud infrastructure |
+| Stops 09–10 | Build reliable, observable, and maintainable data pipelines |
+| Stop 11 | Apply the concepts through end-to-end projects |
+| Final destination | Understand how to design, build, and operate reliable data systems |
+
+The main route emphasizes batch processing. MongoDB, Kafka, Snowflake, and Apache Iceberg are included as complementary technologies, while AI for Data Engineering is a further area of exploration. The sequence is a learning guide rather than a strict prerequisite chain; topics can be revisited as project requirements evolve.
+
 ## Repository Modules
 
 The repository is organized into topic-based modules. Each module may contain notes, code, exercises, examples, and supporting resources.
