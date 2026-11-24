@@ -244,3 +244,68 @@ def compareVersion(self, version1: str, version2: str) -> int:
             st2 = end2
     
     return 0
+
+# ===============================================================
+# program 8: 241. Different Ways to Add Parentheses
+# URL: https://leetcode.com/problems/different-ways-to-add-parentheses/description/
+# ===============================================================
+def evaluate(self, list1: list[int], op: str, list2: list[int]) -> list[int]:
+    _eval_list = []
+
+    # Generate all possible combinations of left and right results
+    for val1 in list1:
+        for val2 in list2:
+
+            # Apply the operator
+            val = val1 * val2 if op == "*" else (
+                val1 + val2 if op == "+" else val1 - val2
+            )
+
+            _eval_list.append(val)
+
+    return _eval_list
+
+def rec(self, exp: str, st: int, end: int, dp: list[list[int]]) -> list[int]:
+
+    # Return the previously computed result
+    if dp[st][end] is not None:
+        return dp[st][end]
+
+    # Base case: The substring contains a single number
+    if end - st <= 1:
+        _list = [int(exp[st:end + 1])]
+        dp[st][end] = _list
+        return dp[st][end]
+
+    my_result = []
+
+    # Try every possible operator as a partition point
+    for cut in range(st, end):
+
+        if exp[cut] in ("+", "-", "*"):
+
+            # Recursively calculate left and right subexpressions
+            left_res = self.rec(exp, st, cut - 1, dp)
+            right_res = self.rec(exp, cut + 1, end, dp)
+
+            # Combine results using the current operator
+            operator = exp[cut]
+            my_result.extend(
+                self.evaluate(left_res, operator, right_res)
+            )
+
+    # Store the computed result in the DP table
+    dp[st][end] = my_result
+
+    return dp[st][end]
+
+def diffWaysToCompute(self, expression: str) -> list[int]:
+
+    # Initialize the 2D DP table
+    dp = [
+        [None for _ in range(len(expression))]
+        for _ in range(len(expression))
+    ]
+
+    # Compute all possible results for the entire expression
+    return self.rec(expression, 0, len(expression) - 1, dp)
