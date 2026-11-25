@@ -56,3 +56,21 @@ def longestCommonPrefix(self, strs: list[str]) -> str:
         outer_idx += 1
 
     return pref
+
+# ============================================================================
+# program 3 : 168. Excel Sheet Column Title
+# url : https://leetcode.com/problems/excel-sheet-column-title/?envType=problem-list-v2&envId=string
+# ============================================================================
+def convertToTitle(self, columnNumber: int) -> str:
+    res = ""
+
+    while columnNumber != 0:
+        columnNumber -= 1
+
+        rem = columnNumber % 26
+
+        res += chr(ord('A') + rem)
+
+        columnNumber = columnNumber // 26
+
+    return res[::-1]

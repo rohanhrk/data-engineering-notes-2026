@@ -1,0 +1,18 @@
+Rules = [
+    IsComplete "order_id",
+    IsUnique "order_id",
+    IsComplete "customer_id",
+    IsComplete "customer_email",
+    IsComplete "product_id",
+    IsComplete "order_timestamp",
+    ColumnValues "order_timestamp" matches "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$",
+    ColumnValues "quantity" between 1 and 20,
+    ColumnValues "unit_price" > 0,
+    ColumnValues "discount_amount" >= 0,
+    ColumnValues "tax_amount" >= 0,
+    ColumnValues "shipping_amount" >= 0,
+    ColumnValues "currency" in ["INR"],
+    ColumnValues "country" in ["India"],
+    ColumnValues "payment_method" in ["UPI", "Credit Card", "Debit Card", "Net Banking", "COD", "Wallet"],
+    ColumnValues "order_status" in ["Placed", "Processing", "Paid", "Shipped", "Delivered", "Cancelled", "Returned"]
+]
